@@ -4,12 +4,12 @@
 class player
 {
 public:
-    
     sf::Texture texture;
     sf::Sprite sprite{ texture };
     sf::Vector2f pos;
-    float speed = 4.0f;
-    float rotation = 0.0f; 
+    sf::Vector2f velocity{ 0.f, 0.f };   // <-- new velocity
+    float speed = 200.0f;              // max speed (pixels/sec)
+    float rotation = 0.0f;
 
     void SetupPlayer()
     {
@@ -21,18 +21,17 @@ public:
         sprite.setTexture(texture, true);
         sprite.setScale(sf::Vector2f{ 0.2f, 0.2f });
 
-        pos.x = 100;
-        pos.y = 300;
-
+        pos = { 100.f, 300.f };
         sprite.setPosition(pos);
 
         auto bounds = sprite.getLocalBounds();
         sprite.setOrigin(bounds.size / 2.0f);
-        
     }
 
     void moveUp();
     void moveDown();
     void moveLeft();
     void moveRight();
+
+    void Update(float dt);  // <-- new: integrate velocity into pos
 };

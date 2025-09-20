@@ -2,8 +2,6 @@
 /// author Pete Lowe May 2025
 /// you need to change the above line or lose marks
 /// </summary>
-
-
 #include "Game.h"
 #include <iostream>
 
@@ -19,12 +17,9 @@ Game::Game() :
 	m_window{ sf::VideoMode{ sf::Vector2u{1000U, 800U}, 32U }, "SFML Game 3.0" },
 	m_DELETEexitGame{false} //when true game will exit
 {
-
-	setupTexts(); // load font 
 	setupSprites(); // load texture
-	setupAudio(); // load sounds
 	m_Player.SetupPlayer();
-	m_Npc.SetupNpc();
+	initNPCs();
 }
 
 /// <summary>
@@ -118,6 +113,12 @@ void Game::update(sf::Time t_deltaTime)
 
 	sf::Vector2f direction{ 0.0f, 0.0f };
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) m_visible[0] = !m_visible[0];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) m_visible[1] = !m_visible[1];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) m_visible[2] = !m_visible[2];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) m_visible[3] = !m_visible[3];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) m_visible[4] = !m_visible[4];
+
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
 	{
 		m_Player.moveUp();
@@ -134,7 +135,29 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_Player.moveRight();
 	}
-	m_Npc.NpcMove(m_Player.pos);
+	
+
+	float dt = t_deltaTime.asSeconds();
+	m_Player.Update(dt);
+
+	for (size_t i = 0; i < m_npcs.size(); ++i)
+	{
+		if (!m_visible[i]) continue;
+
+		SterringOutput steering;
+
+		switch (i)
+		{
+		case 0: steering = m_npcs[i].Seek(m_Player.pos); break;
+		case 1: steering = m_npcs[i].Arrive(m_Player.pos, 150.f, 50.f); break;
+		case 2: steering = m_npcs[i].Arrive(m_Player.pos, 200.f, 75.f); break;
+		case 3: steering = m_npcs[i].Wander(); break;
+		case 4: steering = m_npcs[i].pursue(m_Player.pos, m_Player.velocity); break;
+		}
+
+		m_npcs[i].Update(steering, dt);
+		m_npcs[i].wrapAround(m_npcs[i].pos, 1000U, 800U);
+	}
 
 
 	if (m_DELETEexitGame)
@@ -151,7 +174,11 @@ void Game::render()
 	m_window.clear();
 	
 	m_window.draw(m_Player.sprite);
-	m_window.draw(m_Npc.sprite);
+	for (size_t i = 0; i < m_npcs.size(); ++i)
+	{
+		if (m_visible[i])
+		m_window.draw(m_npcs[i].sprite);
+	}
 
 	m_window.display();
 }
@@ -179,4 +206,21 @@ void Game::setupSprites()
 void Game::setupAudio()
 {
 
+}
+
+void Game::initNPCs()
+{
+	m_npcs.resize(5);               // 5 NPCs
+	m_visible = { true, true, true, true, true };
+
+	for (size_t i = 0; i < m_npcs.size(); ++i)
+	{
+		m_npcs[i].SetupNpc();
+	}
+
+	m_npcs[0].pos = { 200.f, 100.f };   // Seek
+	m_npcs[1].pos = { 400.f, 200.f };   // Arrive
+	m_npcs[2].pos = { 600.f, 200.f };   // Arrive
+	m_npcs[3].pos = { 800.f, 100.f };   // Wander
+	m_npcs[4].pos = { 500.f, 400.f };   // Pursue
 }

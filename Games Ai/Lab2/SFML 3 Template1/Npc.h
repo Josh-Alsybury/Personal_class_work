@@ -1,15 +1,30 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <cmath>
 #include "Player.h"
 #pragma once
+
+struct  SterringOutput
+{
+	sf::Vector2f linear;
+	float angualr = 0.0f;
+};
+
 class Npc
 {
 public:
 	sf::Texture texture;
 	sf::Sprite sprite{ texture };
 	sf::Vector2f pos;
-	float speed = 2.0f;
+	sf::Vector2f velocity{ 0.f, 0.f };   
+	sf::Vector2f acceleration{ 0.f, 0.f }; 
+	float maxSpeed = 200.0f;             
+	float maxAcceleration = 100.0f;
 	float rotation = 0.0f;
+	float angularVelocity = 0.0f;
+	float maxRotation = 180.0f;      
+	float maxAngularAcc = 90.0f;
+	float wanderAngle = 0.f;
 
 	void SetupNpc()
 	{
@@ -21,8 +36,8 @@ public:
 		sprite.setTexture(texture, true);
 		sprite.setScale(sf::Vector2f{ 0.5f, 0.5f });
 
-		pos.x = 800;
-		pos.y = 300;
+		pos = { 800, 300 };
+		velocity = { 0, 0 };
 
 		sprite.setPosition(pos);
 
@@ -31,16 +46,16 @@ public:
 	}
 
 
-	void NpcMove(const sf::Vector2f& playerPos);
-	void Wander(); //1 npc
-	void Seek(const sf::Vector2f& playerPos); //1 npc
-	void Arrive(); // 2 npcs 
-	void pursue(); // 1 npc
+	 
+	SterringOutput Seek(const sf::Vector2f& playerPos); //1 npc
+	SterringOutput Arrive(const sf::Vector2f& playerPos, float slowRadius, float arrivalRadius); // 2 npcs 
+	SterringOutput Wander();//1 npc
+	SterringOutput pursue(const sf::Vector2f& playerPos, const sf::Vector2f& targetVelocity); // 1 npc
+
+	void Update(const SterringOutput& steering, float deltaTime);
+	void wrapAround(sf::Vector2f& pos, float screenWidth, float screenHeight);
 
 private:
-
-	sf::Vector2f desired_velocity;
-	sf::Vector2f steering;
-
+	float MapToRange(float angle);
 };
 

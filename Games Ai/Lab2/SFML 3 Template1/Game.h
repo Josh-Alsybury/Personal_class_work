@@ -46,6 +46,7 @@ private:
 	void setupTexts();
 	void setupSprites();
 	void setupAudio();
+	void initNPCs();
 
 	
 	sf::RenderWindow m_window; // main SFML window
@@ -53,7 +54,11 @@ private:
 	bool m_DELETEexitGame; // control exiting game
 
 	player m_Player;
-	Npc m_Npc;
+	std::vector<Npc> m_npcs;
+	std::vector<bool> m_visible;
+	std::vector<bool> m_keyHeld = { false, false, false, false, false };
+
+
 
 };
 
