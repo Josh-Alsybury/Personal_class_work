@@ -115,6 +115,28 @@ SterringOutput Npc::pursue(const sf::Vector2f& playerPos, const sf::Vector2f& ta
 	return steering;
 }
 
+sf::ConvexShape Npc::getVisionCone()
+{
+    const float coneAngle = 60.f;    
+    const float coneLength = 150.f;  
+
+    
+    float facingAngle = sprite.getRotation().asDegrees() * (3.14159f / 180.f);
+
+    float leftAngle = facingAngle - (coneAngle * 0.5f) * (3.14159f / 180.f);
+    float rightAngle = facingAngle + (coneAngle * 0.5f) * (3.14159f / 180.f);
+
+    sf::ConvexShape cone;
+    cone.setPointCount(3);
+    cone.setPoint(0, pos);
+    cone.setPoint(1, pos + sf::Vector2f(std::cos(leftAngle), std::sin(leftAngle)) * coneLength);
+    cone.setPoint(2, pos + sf::Vector2f(std::cos(rightAngle), std::sin(rightAngle)) * coneLength);
+
+    cone.setFillColor(sf::Color(255, 255, 0, 100)); 
+    return cone;
+}
+
+
 void Npc::Update(const SterringOutput& steering, float deltaTime)
 {
     velocity += steering.linear * deltaTime;

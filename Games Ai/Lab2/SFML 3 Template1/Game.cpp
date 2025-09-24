@@ -20,6 +20,7 @@ Game::Game() :
 	setupSprites(); // load texture
 	m_Player.SetupPlayer();
 	initNPCs();
+	setupTexts();   // load font
 }
 
 /// <summary>
@@ -90,6 +91,11 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 	{
 		m_DELETEexitGame = true; 
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) m_visible[0] = !m_visible[0];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) m_visible[1] = !m_visible[1];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) m_visible[2] = !m_visible[2];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) m_visible[3] = !m_visible[3];
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) m_visible[4] = !m_visible[4];
 }
 
 /// <summary>
@@ -113,11 +119,7 @@ void Game::update(sf::Time t_deltaTime)
 
 	sf::Vector2f direction{ 0.0f, 0.0f };
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)) m_visible[0] = !m_visible[0];
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)) m_visible[1] = !m_visible[1];
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)) m_visible[2] = !m_visible[2];
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)) m_visible[3] = !m_visible[3];
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)) m_visible[4] = !m_visible[4];
+
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
 	{
@@ -155,8 +157,12 @@ void Game::update(sf::Time t_deltaTime)
 		case 4: steering = m_npcs[i].pursue(m_Player.pos, m_Player.velocity); break;
 		}
 
+
 		m_npcs[i].Update(steering, dt);
 		m_npcs[i].wrapAround(m_npcs[i].pos, 1000U, 800U);
+
+		sf::Vector2f npcPos = m_npcs[i].sprite.getPosition();
+		m_npcTexts[i].setPosition(sf::Vector2f{ m_npcs[i].pos.x, m_npcs[i].pos.y - 30.f });
 	}
 
 
@@ -172,12 +178,18 @@ void Game::update(sf::Time t_deltaTime)
 void Game::render()
 {
 	m_window.clear();
-	
+
 	m_window.draw(m_Player.sprite);
+
 	for (size_t i = 0; i < m_npcs.size(); ++i)
 	{
-		if (m_visible[i])
-		m_window.draw(m_npcs[i].sprite);
+		if (m_visible[i]) 
+		{
+			cone = m_npcs[i].getVisionCone();
+			m_window.draw(cone);
+			m_window.draw(m_npcs[i].sprite);
+			m_window.draw(m_npcTexts[i]);
+		}
 	}
 
 	m_window.display();
@@ -188,9 +200,34 @@ void Game::render()
 /// </summary>
 void Game::setupTexts()
 {
+	if (!m_jerseyFont.openFromFile("ASSETS/FONTS/Jersey20-Regular.ttf"))
+	{
+		std::cout << "Error loading font!\n";
+	}
 
+	std::vector<std::string> labels = {
+		"Seek",
+		"Arrive (Slow)",
+		"Arrive (Fast)",
+		"Wander",
+		"Pursue"
+	};
 
+	
+	m_npcTexts.clear();
+	m_npcTexts.resize(m_npcs.size(), sf::Text(m_jerseyFont));
+
+	for (size_t i = 0; i < m_npcTexts.size(); ++i)
+	{
+		m_npcTexts[i].setString(labels[i]);
+		m_npcTexts[i].setCharacterSize(18);
+		m_npcTexts[i].setFillColor(sf::Color::White);
+		m_npcTexts[i].setOutlineColor(sf::Color::Black);
+		m_npcTexts[i].setOutlineThickness(2.f);
+	}
 }
+
+
 
 /// <summary>
 /// load the texture and setup the sprite for the logo

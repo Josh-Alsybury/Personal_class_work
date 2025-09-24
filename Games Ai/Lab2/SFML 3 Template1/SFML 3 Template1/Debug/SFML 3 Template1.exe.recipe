@@ -2,12 +2,12 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\gameuser\Desktop\Games Ai\Lab2\SFML 3 Template1\Debug\SFML 3 Template1.exe</FullPath>
+      <FullPath>C:\Users\Josha\Desktop\Personal_class_work\Games Ai\Lab2\SFML 3 Template1\Debug\SFML 3 Template1.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\gameuser\Desktop\Games Ai\Lab2\SFML 3 Template1\ASSETS\IMAGES\SFML-LOGO.png</FullPath>
+      <FullPath>C:\Users\Josha\Desktop\Personal_class_work\Games Ai\Lab2\SFML 3 Template1\ASSETS\IMAGES\SFML-LOGO.png</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

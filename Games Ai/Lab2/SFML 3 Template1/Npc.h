@@ -52,10 +52,13 @@ public:
 	SterringOutput Wander();//1 npc
 	SterringOutput pursue(const sf::Vector2f& playerPos, const sf::Vector2f& targetVelocity); // 1 npc
 
+
+	sf::ConvexShape Npc::getVisionCone();
 	void Update(const SterringOutput& steering, float deltaTime);
 	void wrapAround(sf::Vector2f& pos, float screenWidth, float screenHeight);
 
 private:
 	float MapToRange(float angle);
-};
 
+	
+};

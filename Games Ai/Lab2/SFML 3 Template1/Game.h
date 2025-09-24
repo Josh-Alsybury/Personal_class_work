@@ -33,7 +33,8 @@ public:
 	~Game();
 	void run();
 
-	
+	sf::ConvexShape cone;
+	std::vector<sf::Text> m_npcTexts;
 
 private:
 
@@ -57,8 +58,6 @@ private:
 	std::vector<Npc> m_npcs;
 	std::vector<bool> m_visible;
 	std::vector<bool> m_keyHeld = { false, false, false, false, false };
-
-
 
 };
 
