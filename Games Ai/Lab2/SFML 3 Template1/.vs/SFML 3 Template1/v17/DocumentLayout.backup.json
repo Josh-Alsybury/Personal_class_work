@@ -1,30 +1,30 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\",
+  "WorkspaceRootPath": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Game.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Npc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Npc.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{82A572CD-C214-4BC2-9E7D-9FD6E8C0E0D3}|SFML 3 Template1.vcxproj|solutionrelative:Npc.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,41 +38,39 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Player.h",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h",
               "RelativeDocumentMoniker": "Player.h",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.h",
               "RelativeToolTip": "Player.h",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-09-16T10:31:19.441Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Player.cpp",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp",
               "RelativeDocumentMoniker": "Player.cpp",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Player.cpp",
               "RelativeToolTip": "Player.cpp",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-09-16T10:32:55.621Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 3,
               "Title": "Npc.h",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h",
               "RelativeDocumentMoniker": "Npc.h",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.h",
               "RelativeToolTip": "Npc.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAAB4AAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-09-17T13:13:07.576Z",
               "IsPinned": true,
@@ -82,11 +80,11 @@
               "$type": "Document",
               "DocumentIndex": 2,
               "Title": "Npc.cpp",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp",
               "RelativeDocumentMoniker": "Npc.cpp",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Npc.cpp",
               "RelativeToolTip": "Npc.cpp",
-              "ViewState": "AgIAAGwAAAAAAAAAAAAmwJMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-09-17T13:13:09.949Z",
               "IsPinned": true,
@@ -96,9 +94,9 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "Game.h",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h",
               "RelativeDocumentMoniker": "Game.h",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.h",
               "RelativeToolTip": "Game.h",
               "ViewState": "AgIAACwAAAAAAAAAAAAWwDoAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
@@ -109,11 +107,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Game.cpp",
-              "DocumentMoniker": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp",
+              "DocumentMoniker": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp",
               "RelativeDocumentMoniker": "Game.cpp",
-              "ToolTip": "C:\\Users\\gameuser\\Desktop\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp",
+              "ToolTip": "C:\\Users\\Josha\\Desktop\\Personal_class_work\\Games Ai\\Lab2\\SFML 3 Template1\\Game.cpp",
               "RelativeToolTip": "Game.cpp",
-              "ViewState": "AgIAAGoAAAAAAAAAAAAAAHgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAMcAAAAAAAAAAAAAANMAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-09-20T11:06:17.418Z",
               "EditorCaption": ""

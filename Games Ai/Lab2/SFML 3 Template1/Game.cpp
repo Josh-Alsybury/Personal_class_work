@@ -151,8 +151,8 @@ void Game::update(sf::Time t_deltaTime)
 		switch (i)
 		{
 		case 0: steering = m_npcs[i].Seek(m_Player.pos); break;
-		case 1: steering = m_npcs[i].Arrive(m_Player.pos, 150.f, 50.f); break;
-		case 2: steering = m_npcs[i].Arrive(m_Player.pos, 200.f, 75.f); break;
+		case 1: steering = m_npcs[i].Arrive(m_Player.pos, 300.f, 90.f); break;
+		case 2: steering = m_npcs[i].Arrive(m_Player.pos, 150.f, 40.f); break;
 		case 3: steering = m_npcs[i].Wander(); break;
 		case 4: steering = m_npcs[i].pursue(m_Player.pos, m_Player.velocity); break;
 		}
@@ -185,7 +185,7 @@ void Game::render()
 	{
 		if (m_visible[i]) 
 		{
-			cone = m_npcs[i].getVisionCone();
+			cone = m_npcs[i].getVisionCone(m_Player.pos);
 			m_window.draw(cone);
 			m_window.draw(m_npcs[i].sprite);
 			m_window.draw(m_npcTexts[i]);
@@ -206,11 +206,11 @@ void Game::setupTexts()
 	}
 
 	std::vector<std::string> labels = {
-		"Seek",
-		"Arrive (Slow)",
-		"Arrive (Fast)",
-		"Wander",
-		"Pursue"
+		"Key 1 Seek",
+		"Key 2 Arrive (Slow)",
+		"Key 3 Arrive (Fast)",
+		"Key 4 Wander",
+		"Key 5 Pursue"
 	};
 
 	

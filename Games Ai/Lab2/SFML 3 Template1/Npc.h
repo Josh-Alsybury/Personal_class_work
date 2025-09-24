@@ -16,15 +16,20 @@ public:
 	sf::Texture texture;
 	sf::Sprite sprite{ texture };
 	sf::Vector2f pos;
+
 	sf::Vector2f velocity{ 0.f, 0.f };   
 	sf::Vector2f acceleration{ 0.f, 0.f }; 
 	float maxSpeed = 200.0f;             
 	float maxAcceleration = 100.0f;
 	float rotation = 0.0f;
+
 	float angularVelocity = 0.0f;
 	float maxRotation = 180.0f;      
 	float maxAngularAcc = 90.0f;
 	float wanderAngle = 0.f;
+
+	float visionLength = 150.f;
+	float visionAngle = 60.f;
 
 	void SetupNpc()
 	{
@@ -53,7 +58,8 @@ public:
 	SterringOutput pursue(const sf::Vector2f& playerPos, const sf::Vector2f& targetVelocity); // 1 npc
 
 
-	sf::ConvexShape Npc::getVisionCone();
+	sf::ConvexShape Npc::getVisionCone(const sf::Vector2f& playerPos);
+	bool isPlayerInVision(const sf::Vector2f& playerPos);
 	void Update(const SterringOutput& steering, float deltaTime);
 	void wrapAround(sf::Vector2f& pos, float screenWidth, float screenHeight);
 

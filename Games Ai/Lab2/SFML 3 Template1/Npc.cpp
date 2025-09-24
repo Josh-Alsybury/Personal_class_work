@@ -115,7 +115,7 @@ SterringOutput Npc::pursue(const sf::Vector2f& playerPos, const sf::Vector2f& ta
 	return steering;
 }
 
-sf::ConvexShape Npc::getVisionCone()
+sf::ConvexShape Npc::getVisionCone(const sf::Vector2f& playerPos)
 {
     const float coneAngle = 60.f;    
     const float coneLength = 150.f;  
@@ -133,7 +133,34 @@ sf::ConvexShape Npc::getVisionCone()
     cone.setPoint(2, pos + sf::Vector2f(std::cos(rightAngle), std::sin(rightAngle)) * coneLength);
 
     cone.setFillColor(sf::Color(255, 255, 0, 100)); 
+
+    if (isPlayerInVision(playerPos))
+        cone.setFillColor(sf::Color(255, 0, 0, 100)); 
+    else
+        cone.setFillColor(sf::Color(255, 255, 0, 100)); 
+
     return cone;
+}
+
+bool Npc::isPlayerInVision(const sf::Vector2f& playerPos)
+{
+
+    sf::Vector2f toPlayer = playerPos - pos;
+    float distance = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+    if (distance > visionLength) return false;
+
+    toPlayer /= distance; 
+
+    sf::Vector2f forward;
+    if (velocity.x != 0 || velocity.y != 0)
+        forward = velocity / std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    else
+        forward = sf::Vector2f(1.f, 0.f);
+
+    float dot = forward.x * toPlayer.x + forward.y * toPlayer.y; 
+    float angleBetween = std::acos(dot) * 180.f / 3.14159f; 
+
+    return angleBetween < (visionAngle / 2.f);
 }
 
 
@@ -148,6 +175,8 @@ void Npc::Update(const SterringOutput& steering, float deltaTime)
     pos += velocity * deltaTime;
     sprite.setPosition(pos);
 }
+
+
 
 void Npc::wrapAround(sf::Vector2f& pos, float screenWidth, float screenHeight)
 {
