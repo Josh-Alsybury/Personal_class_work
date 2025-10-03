@@ -39,7 +39,7 @@ public:
 		}
 
 		sprite.setTexture(texture, true);
-		sprite.setScale(sf::Vector2f{ 0.5f, 0.5f });
+		sprite.setScale(sf::Vector2f{ 0.15f, 0.15f });
 
 		pos = { 800, 300 };
 		velocity = { 0, 0 };
@@ -56,7 +56,7 @@ public:
 	SterringOutput Arrive(const sf::Vector2f& playerPos, float slowRadius, float arrivalRadius); // 2 npcs 
 	SterringOutput Wander();//1 npc
 	SterringOutput pursue(const sf::Vector2f& playerPos, const sf::Vector2f& targetVelocity); // 1 npc
-	SterringOutput Swarm(const std::vector<Npc>& all, size_t selfIndex,float neighborRadius = 120.f,float desiredSeparation = 30.f);
+	SterringOutput Swarm(const std::vector<Npc>& all, size_t selfIndex, float neighborRadius, float A, float B, int N, int M);
 
 
 

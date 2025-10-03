@@ -120,7 +120,6 @@ void Game::update(sf::Time t_deltaTime)
 	sf::Vector2f direction{ 0.0f, 0.0f };
 
 
-
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
 	{
 		m_Player.moveUp();
@@ -144,24 +143,17 @@ void Game::update(sf::Time t_deltaTime)
 
 	if (m_npcs.empty()) return;
 
-	SterringOutput leaderSteering = m_npcs[0].Wander();
-	m_npcs[0].Update(leaderSteering, dt);
-	m_npcs[0].wrapAround(m_npcs[0].pos, 1000U, 800U);
-	m_npcTexts[0].setPosition(sf::Vector2f{ m_npcs[0].pos.x, m_npcs[0].pos.y - 30.f }); 
-
-	for (size_t i = 1; i < m_npcs.size(); ++i)
+	for (size_t i = 0; i < m_npcs.size(); ++i)
 	{
 		if (!m_visible[i]) continue;
-		SterringOutput followLeader = m_npcs[i].Seek(m_npcs[0].pos);
-		SterringOutput ljSwarm = m_npcs[i].Swarm(m_npcs, i);
-		SterringOutput steering;
-		steering.linear = followLeader.linear * 1.5f + ljSwarm.linear * 1.0f;
-
-		m_npcs[i].Update(steering, dt);
+		
+		SterringOutput swarmSteering = m_npcs[i].Swarm(m_npcs, i,700.f,1100.f,500.f,2,1);
+		m_npcs[i].Update(swarmSteering, dt);
+		
 		m_npcs[i].wrapAround(m_npcs[i].pos, 1000U, 800U);
+
 		m_npcTexts[i].setPosition(sf::Vector2f{ m_npcs[i].pos.x, m_npcs[i].pos.y - 30.f });
 	}
-
 
 
 	if (m_DELETEexitGame)
@@ -183,8 +175,8 @@ void Game::render()
 	{
 		if (m_visible[i]) 
 		{
-			cone = m_npcs[i].getVisionCone(m_Player.pos);
-			m_window.draw(cone);
+			//cone = m_npcs[i].getVisionCone(m_Player.pos);
+			//m_window.draw(cone);
 			m_window.draw(m_npcs[i].sprite);
 			m_window.draw(m_npcTexts[i]);
 		}

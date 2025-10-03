@@ -115,43 +115,47 @@ SterringOutput Npc::pursue(const sf::Vector2f& playerPos, const sf::Vector2f& ta
 	return steering;
 }
 
-SterringOutput Npc::Swarm(const std::vector<Npc>& all, size_t selfIndex, float neighborRadius, float desiredSeparation)
+SterringOutput Npc::Swarm(const std::vector<Npc>& all, size_t selfIndex,
+    float neighborRadius, float A, float B, int N, int M)
 {
-    sf::Vector2f separation{ 0.f,0.f };
-    sf::Vector2f cohesion{ 0.f,0.f };
-    sf::Vector2f alignment{ 0.f,0.f };
+    sf::Vector2f totalForce{ 0.f, 0.f };
+    sf::Vector2f alignment{ 0.f, 0.f };
     int neighborCount = 0;
 
-    neighborRadius = 100.f;
+    const sf::Vector2f& pos = all[selfIndex].pos;
+
+    velocity = sf::Vector2f(rand() % 20 - 10, rand() % 20 - 10);
 
     for (size_t i = 0; i < all.size(); ++i)
     {
         if (i == selfIndex) continue;
-        sf::Vector2f diff = all[i].pos - pos;
-        float dist = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-        if (dist < 0.001f || dist > neighborRadius) continue;
 
-        separation -= diff / (dist * dist);       
-        cohesion += all[i].pos;                
-        alignment += all[i].velocity;          
+        sf::Vector2f diff = pos - all[i].pos;
+        float dist = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+
+        if (dist < 0.001f || dist > neighborRadius) continue;
+        sf::Vector2f dir = diff / dist;
+        float forceMag = (N * A) / std::pow(dist, N + 1) - (M * B) / std::pow(dist, M + 1);
+        totalForce += dir * forceMag;
+
+
+        alignment += all[i].velocity;
         neighborCount++;
     }
 
-    if (neighborCount > 0)
+    for (size_t i = 0; i < all.size(); ++i)
     {
-        cohesion = (cohesion / (float)neighborCount - pos);
-        alignment /= (float)neighborCount;
+        if (i == selfIndex) continue;
+        SterringOutput steering;
+        steering.linear = totalForce + alignment * 0.5f;
+        float len = std::sqrt(steering.linear.x * steering.linear.x + steering.linear.y * steering.linear.y);
+        if (len > maxAcceleration)
+            steering.linear *= (maxAcceleration / len);
+
+        return steering;
     }
-
-    sf::Vector2f leaderTarget = all[0].pos + sf::Vector2f((rand() % 40 - 20.f), (rand() % 40 - 20.f));
-    sf::Vector2f toLeader = leaderTarget - pos;
-    SterringOutput steering;
-    steering.linear = toLeader * 0.5f + separation * 1.5f + cohesion * 0.7f + alignment * 0.5f;
-    float len = std::sqrt(steering.linear.x * steering.linear.x + steering.linear.y * steering.linear.y);
-    if (len > maxAcceleration) steering.linear *= (maxAcceleration / len);
-
-    return steering;
 }
+
 
 sf::ConvexShape Npc::getVisionCone(const sf::Vector2f& playerPos)
 {
