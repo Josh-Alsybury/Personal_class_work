@@ -7,9 +7,10 @@ public:
     sf::Texture texture;
     sf::Sprite sprite{ texture };
     sf::Vector2f pos;
-    sf::Vector2f velocity{ 0.f, 0.f };   // <-- new velocity
-    float speed = 50.0f;              // max speed (pixels/sec)
-    float rotation = 0.0f;
+    sf::Vector2f velocity;
+    float speed = 200.f;       
+    float maxSpeed = 550.f;    
+    float friction = 500.f;       
 
     void SetupPlayer()
     {
@@ -28,8 +29,6 @@ public:
         sprite.setOrigin(bounds.size / 2.0f);
     }
 
-    void moveUp();
-    void moveDown();
     void moveLeft();
     void moveRight();
 
