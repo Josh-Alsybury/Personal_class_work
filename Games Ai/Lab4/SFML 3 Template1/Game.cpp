@@ -186,14 +186,6 @@ void Game::updateFormation(float dt)
 		slotCircle[i].setFillColor(sf::Color::Green);
 		slotCircle[i].setRadius(5.5f);
 		slotCircle[i].setPosition(slotPos);
-		
-		////////////
-	
-		//m_npcs[i].pos = slotPos;
-		//m_npcs[i].rotation = m_Player.rotation;
-
-
-		// dk if its meant to be like this ////
 
 		SterringOutput steering = m_npcs[i].ArriveToSlot(slotPos, 200, 5);
 		m_npcs[i].Update(steering, dt);
