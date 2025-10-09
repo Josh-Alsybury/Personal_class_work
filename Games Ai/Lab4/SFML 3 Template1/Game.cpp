@@ -182,18 +182,20 @@ void Game::updateFormation(float dt)
 
 	for (size_t i = 0; i < m_npcs.size() && (i + 1) < m_formationOffsets.size(); ++i)
 	{
-		sf::Vector2f slotPos =m_Player.pos +right * m_formationOffsets[i + 1].x +forward * m_formationOffsets[i + 1].y;
-		slotCircle.setFillColor(sf::Color::Green);
-		slotCircle.setRadius(5.5f);
-		slotCircle.setPosition(slotPos);
+		sf::Vector2f slotPos = m_Player.pos +right * m_formationOffsets[i + 1].x +forward * m_formationOffsets[i + 1].y;
+		slotCircle[i].setFillColor(sf::Color::Green);
+		slotCircle[i].setRadius(5.5f);
+		slotCircle[i].setPosition(slotPos);
+		
+		////////////
+	
+		//m_npcs[i].pos = slotPos;
+		//m_npcs[i].rotation = m_Player.rotation;
 
-		// optional ?? ///
-		m_npcs[i].pos = slotPos;
-		m_npcs[i].rotation = m_Player.rotation;
 
 		// dk if its meant to be like this ////
 
-		SterringOutput steering = m_npcs[i].ArriveToSlot(slotPos, 200, 100);
+		SterringOutput steering = m_npcs[i].ArriveToSlot(slotPos, 200, 5);
 		m_npcs[i].Update(steering, dt);
 		m_npcs[i].wrapAround(m_npcs[i].pos, 1000U, 800U);
 	}
@@ -201,6 +203,8 @@ void Game::updateFormation(float dt)
 	
 
 }
+
+
 
 
 
@@ -218,9 +222,10 @@ void Game::render()
 		if (m_visible[i]) 
 		{
 			m_window.draw(m_npcs[i].sprite);
+			m_window.draw(slotCircle[i]);
 		}
 	}
-	m_window.draw(slotCircle);
+	
 	m_window.draw(m_formationHintText);
 	m_window.display();
 }

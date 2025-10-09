@@ -51,7 +51,7 @@ private:
 	void setupAudio();
 	void initNPCs();
 
-	sf::CircleShape slotCircle;
+	sf::CircleShape slotCircle[4];
 	sf::RenderWindow m_window; // main SFML window
 	sf::Font m_jerseyFont;// font used by message
 	sf::Text m_formationHintText{ m_jerseyFont };
@@ -65,6 +65,7 @@ private:
 
 	std::vector<sf::Vector2f> m_formationOffsets = { { 0.f, 0.f },{ -50.f, 50.f },{  50.f, 50.f },{ -100.f, 100.f },{ 100.f, 100.f } };
 	bool m_formationMode = false;
+	bool m_formationlock = false;
 
 
 };
