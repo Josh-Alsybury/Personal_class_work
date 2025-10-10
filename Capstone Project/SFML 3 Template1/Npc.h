@@ -34,10 +34,7 @@ public:
 
 	void SetupNpc()
 	{
-		if (!texture.loadFromFile("ASSETS/IMAGES/Alien.png"))
-		{
-			throw std::runtime_error("Failed to load Ship.png!");
-		}
+		
 
 		sprite.setTexture(texture, true);
 		sprite.setScale(sf::Vector2f{ 0.5f, 0.5f });

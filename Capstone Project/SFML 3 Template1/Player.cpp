@@ -4,7 +4,7 @@
 void player::Jump()
 {
     if (isOnGround)
-        velocity.y -= 100;
+        velocity.y -= 80;
 }
 
 void player::moveLeft()
@@ -17,16 +17,35 @@ void player::moveRight()
     velocity.x += speed;
 }
 
+void player::AnimatePlayer()
+{
+    int frame = 0; int const FRAME_TALL = 64;
+    m_frameCount += m_framePlus;
+    frame = static_cast<int>(m_frameCount);
+    frame = frame % 8;
+    if (frame != m_frameNow)
+    {
+        sf::IntRect rect;
+        rect.position.x = 96 * frame; 
+        rect.position.y = 0;           
+        rect.size.x = 96;          
+        rect.size.y = 96;
+
+        sprite.setTextureRect(rect);
+    }
+
+}
+
 void player::Update(float dt)
 {
-    // Clamp horizontal velocity
+    AnimatePlayer();
+
     if (velocity.x > maxSpeed) velocity.x = maxSpeed;
     if (velocity.x < -maxSpeed) velocity.x = -maxSpeed;
 
-    // Apply gravity (always pulling down)
+
     velocity.y += gravity * dt;
 
-    // Apply friction only when grounded
     if (isOnGround)
     {
         if (velocity.x > 0)
@@ -34,12 +53,10 @@ void player::Update(float dt)
         else if (velocity.x < 0)
             velocity.x += friction * dt;
 
-        // Snap small velocities to zero
         if (std::abs(velocity.x) < 1.f)
             velocity.x = 0.f;
     }
 
-    // Update position
     pos += velocity * dt;
     sprite.setPosition(pos);
 
