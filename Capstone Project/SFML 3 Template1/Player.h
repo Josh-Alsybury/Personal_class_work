@@ -8,9 +8,14 @@ public:
     sf::Sprite sprite{ texture };
     sf::Vector2f pos;
     sf::Vector2f velocity;
+
+    bool isOnGround = true;
+
     float speed = 200.f;       
     float maxSpeed = 550.f;    
-    float friction = 500.f;       
+    float friction = 500.f;    
+    float gravity = 9.80665f;
+    float Groundlevel = 750.f;
 
     void SetupPlayer()
     {
@@ -22,12 +27,14 @@ public:
         sprite.setTexture(texture, true);
         sprite.setScale(sf::Vector2f{ 0.2f, 0.2f });
 
-        pos = { 100.f, 300.f };
+        pos = { 40.f, 750.f };
         sprite.setPosition(pos);
 
         auto bounds = sprite.getLocalBounds();
         sprite.setOrigin(bounds.size / 2.0f);
     }
+
+    void Jump();
 
     void moveLeft();
     void moveRight();

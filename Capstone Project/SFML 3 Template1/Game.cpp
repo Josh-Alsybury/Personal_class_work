@@ -126,7 +126,10 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_Player.moveRight();
 	}
-
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+	{
+		m_Player.Jump();
+	}
 
 	float dt = t_deltaTime.asSeconds();
 	m_Player.Update(dt);

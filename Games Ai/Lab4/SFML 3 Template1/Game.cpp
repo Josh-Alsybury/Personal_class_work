@@ -174,7 +174,7 @@ void Game::update(sf::Time t_deltaTime)
 
 void Game::updateFormation(float dt)
 {
-	float radians = m_Player.rotation * (3.14159f / 180.0f);
+	float radians = m_Player.rotation * (m_Player.rotation);
 	sf::Vector2f forward(-std::cos(radians), -std::sin(radians));
 	sf::Vector2f right(forward.y, -forward.x);
 
