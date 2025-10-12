@@ -16,7 +16,6 @@ public:
 	sf::Texture texture;
 	sf::Sprite sprite{ texture };
 	sf::Vector2f pos;
-	player m_Player;
 
 	sf::Vector2f velocity{ 0.f, 0.f };   
 	sf::Vector2f acceleration{ 0.f, 0.f }; 

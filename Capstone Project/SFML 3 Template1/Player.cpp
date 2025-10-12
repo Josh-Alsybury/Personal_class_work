@@ -19,21 +19,26 @@ void player::moveRight()
 
 void player::AnimatePlayer()
 {
-    int frame = 0; int const FRAME_TALL = 64;
+    const int FRAME_WIDTH = 96;
+    const int FRAME_HEIGHT = 96;
+    const int FRAME_COUNT = 8;
+
     m_frameCount += m_framePlus;
-    frame = static_cast<int>(m_frameCount);
-    frame = frame % 8;
+    int frame = static_cast<int>(m_frameCount) % FRAME_COUNT;
+
     if (frame != m_frameNow)
     {
+        m_frameNow = frame;
+
         sf::IntRect rect;
-        rect.position.x = 96 * frame; 
-        rect.position.y = 0;           
-        rect.size.x = 96;          
-        rect.size.y = 96;
+        rect.position = { FRAME_WIDTH * frame, 0 };      // replaces left/top
+        rect.size = { FRAME_WIDTH, FRAME_HEIGHT };       // replaces width/height
 
         sprite.setTextureRect(rect);
-    }
 
+        // ✅ use rect.size in SFML 3
+        sprite.setOrigin(sf::Vector2f(rect.size.x / 2.f, rect.size.y / 2.f));
+    }
 }
 
 void player::Update(float dt)

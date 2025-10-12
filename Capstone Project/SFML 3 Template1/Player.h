@@ -15,7 +15,7 @@ public:
     float maxSpeed = 550.f;    
     float friction = 600.f;    
     float gravity = 50.f;
-    float Groundlevel = 750.f;
+    float Groundlevel = 740.f;
 
     int m_frameNow{ 0 };
     float m_frameCount{ 0.0f };
@@ -28,14 +28,15 @@ public:
             throw std::runtime_error("Failed to load IDLE.png!");
         }
 
-        sprite.setTexture(texture, true);
-        sprite.setScale(sf::Vector2f{ 1.8f, 1.8f });
 
-        pos = { 40.f, 750.f };
+        sprite.setTexture(texture);
+        sprite.setScale(sf::Vector2f(1.8f, 1.8f));
+
+        pos = { 90.f, 750.f };
         sprite.setPosition(pos);
 
-        auto bounds = sprite.getLocalBounds();
-        sprite.setOrigin(bounds.size / 2.0f);
+        sprite.setTextureRect(sf::IntRect{ {0, 0}, {96, 96} });
+        sprite.setOrigin(sf::Vector2f(48.f, 48.f)); 
     }
 
     enum class PlayerState

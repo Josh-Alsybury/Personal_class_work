@@ -20,11 +20,10 @@
 #include <SFML/Audio.hpp>
 #include "Player.h"
 #include "Npc.h"
+#include "Background.h"
 
 
-const sf::Color ULTRAMARINE{ 5, 55,242,255 }; // const colour
-
-
+const sf::Color WHITE{ 0, 0,0,0 }; // const colour
 
 class Game
 {
@@ -58,6 +57,7 @@ private:
 
 	player m_Player;
 	std::vector<Npc> m_npcs;
+	Background m_background;
 };
 
 #pragma warning( pop ) 

@@ -135,7 +135,6 @@ void Game::update(sf::Time t_deltaTime)
 	m_Player.Update(dt);
 
 
-
 	if (m_DELETEexitGame)
 	{
 		m_window.close();
@@ -151,11 +150,12 @@ void Game::update(sf::Time t_deltaTime)
 /// </summary>
 void Game::render()
 {
-	m_window.clear();
+	m_window.clear(sf::Color::White);
+
+	m_background.render(m_window);
 
 	m_window.draw(m_Player.sprite);
 	
-	m_window.draw(m_formationHintText);
 	m_window.display();
 }
 
