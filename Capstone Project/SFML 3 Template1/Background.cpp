@@ -1,22 +1,40 @@
 #include "Background.h"
 #include <stdexcept>
 
-Background::Background()
+Background::Background(const std::string& filePath, float parallaxFactor)
+    : m_parallax(parallaxFactor)
 {
-    if (!BGtexture.loadFromFile("ASSETS/IMAGES/Autumn Forest 2D Pixel Art/Background/2.png"))
-    {
+    if (!BGtexture.loadFromFile(filePath))
         throw std::runtime_error("Failed to load background texture!");
-    }
 
-    BGsprite.setTexture(BGtexture, true);
     sf::Vector2u texSize = BGtexture.getSize();
     float scaleX = 1000.f / texSize.x;
     float scaleY = 800.f / texSize.y;
-    BGsprite.setScale(sf::Vector2f(scaleX, scaleY));
-    BGsprite.setPosition(sf::Vector2f(0.f, 0.f));
+    m_width = texSize.x * scaleX;
+
+    BGtexture.setRepeated(true);
+    BGsprites.reserve(2); 
+    for (int i = 0; i < 2; ++i)
+    {
+        BGsprites.emplace_back(BGtexture); 
+        BGsprites[i].setScale(sf::Vector2f(scaleX, scaleY));
+        BGsprites[i].setPosition(sf::Vector2f(i * m_width, 0.f));
+    }
 }
 
 void Background::render(sf::RenderWindow& window)
 {
-    window.draw(BGsprite);
+    for (auto& sprite : BGsprites)
+        window.draw(sprite);
+}
+
+void Background::setOffset(const sf::Vector2f& offset)
+{
+    float x = -offset.x * m_parallax;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        float spriteX = i * m_width + fmod(x, m_width);
+        BGsprites[i].setPosition(sf::Vector2f(spriteX, 0.f));
+    }
 }

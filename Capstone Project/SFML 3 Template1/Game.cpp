@@ -17,8 +17,15 @@ Game::Game() :
 	m_window{ sf::VideoMode{ sf::Vector2u{1000U, 800U}, 32U }, "SFML Game 3.0" },
 	m_DELETEexitGame{false} //when true game will exit
 {
+	m_backgroundLayers.reserve(3);
+	m_backgroundLayers.emplace_back("ASSETS/IMAGES/Autumn Forest 2D Pixel Art/Background/3.png", 1.0f);
+	m_backgroundLayers.emplace_back("ASSETS/IMAGES/Autumn Forest 2D Pixel Art/Background/2.png", 0.8f);
+	m_backgroundLayers.emplace_back("ASSETS/IMAGES/Autumn Forest 2D Pixel Art/Background/1.png", 0.5f);
 
 
+
+
+	m_Player.pos.x = m_window.getSize().x / 2.f;
 	setupSprites(); // load texture
 	m_Player.SetupPlayer();
 	initNPCs();
@@ -132,6 +139,21 @@ void Game::update(sf::Time t_deltaTime)
 		m_Player.Jump();
 	}
 
+	float leftMargin = m_screenMargin;
+	float rightMargin = m_window.getSize().x - m_screenMargin;
+
+	float playerScreenX = m_Player.pos.x - m_cameraOffset.x;
+
+	if (playerScreenX > rightMargin)
+		m_cameraOffset.x += playerScreenX - rightMargin;
+	else if (playerScreenX < leftMargin)
+		m_cameraOffset.x -= leftMargin - playerScreenX;
+
+	for (auto& layer : m_backgroundLayers)
+	{
+		layer.setOffset(m_cameraOffset);
+	}
+
 	float dt = t_deltaTime.asSeconds();
 	m_Player.Update(dt);
 
@@ -151,9 +173,15 @@ void Game::update(sf::Time t_deltaTime)
 /// </summary>
 void Game::render()
 {
-	m_window.clear(sf::Color::White);
+	m_window.clear(sf::Color::Blue);
 
-	m_background.render(m_window);
+	sf::Vector2f renderPos = m_Player.pos - m_cameraOffset;
+	m_Player.sprite->setPosition(renderPos);
+	for (auto& layer : m_backgroundLayers)
+	{
+		layer.render(m_window);
+	}
+	
 
 	m_window.draw(*m_Player.sprite);
 	

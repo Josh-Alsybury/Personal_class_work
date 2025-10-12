@@ -113,5 +113,7 @@ void player::Update(float dt)
     {
         isOnGround = false;
     }
+
+    sprite->setPosition(pos);
 }
 

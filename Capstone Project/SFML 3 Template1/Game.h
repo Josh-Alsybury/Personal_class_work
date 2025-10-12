@@ -37,7 +37,8 @@ public:
 private:
 	
 	sf::Vector2f m_cameraOffset{ 0.f, 0.f };
-	const float m_screenMargin = 300.f;
+	const float m_screenMargin = 200.f;
+
 
 
 	void processEvents();
@@ -59,7 +60,8 @@ private:
 
 	player m_Player;
 	std::vector<Npc> m_npcs;
-	Background m_background;
+	std::vector<Background> m_backgroundLayers;
+	
 };
 
 #pragma warning( pop ) 

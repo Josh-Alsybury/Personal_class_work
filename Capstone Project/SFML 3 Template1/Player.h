@@ -76,7 +76,7 @@ public:
     {
         pos = { 90.f, 750.f };
         velocity = { 0.f, 0.f };
-
+       
     }
 
     PlayerState state = PlayerState::Idle;
