@@ -36,6 +36,8 @@ public:
 
 private:
 	
+	sf::Vector2f m_cameraOffset{ 0.f, 0.f };
+	const float m_screenMargin = 300.f;
 
 
 	void processEvents();

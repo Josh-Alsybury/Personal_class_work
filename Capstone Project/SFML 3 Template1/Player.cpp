@@ -10,44 +10,82 @@ void player::Jump()
 void player::moveLeft()
 {
     velocity.x -= speed;
+    if (facingRight) {
+        facingRight = false;
+        sprite->setScale(sf::Vector2f( - std::abs(sprite->getScale().x), sprite->getScale().y));
+    }
 }
 
 void player::moveRight()
 {
     velocity.x += speed;
+    if (!facingRight) {
+        facingRight = true;
+        sprite->setScale(sf::Vector2f(std::abs(sprite->getScale().x), sprite->getScale().y));
+    }
 }
 
 void player::AnimatePlayer()
 {
-    const int FRAME_WIDTH = 96;
-    const int FRAME_HEIGHT = 96;
-    const int FRAME_COUNT = 8;
+    UpdateAnimationTexture();
 
     m_frameCount += m_framePlus;
-    int frame = static_cast<int>(m_frameCount) % FRAME_COUNT;
+    int frame = static_cast<int>(m_frameCount) % currentAnim->frameCount;
 
     if (frame != m_frameNow)
     {
         m_frameNow = frame;
+        sf::IntRect rect(
+            sf::Vector2i(frame * currentAnim->frameWidth, 0),             
+            sf::Vector2i(currentAnim->frameWidth, currentAnim->frameHeight) 
+        );
+        sprite->setTextureRect(rect);
+        sprite->setOrigin(sf::Vector2f(currentAnim->frameWidth / 2.f, currentAnim->frameHeight / 2.f));
+    }
+}
 
-        sf::IntRect rect;
-        rect.position = { FRAME_WIDTH * frame, 0 };      // replaces left/top
-        rect.size = { FRAME_WIDTH, FRAME_HEIGHT };       // replaces width/height
+void player::UpdateAnimationTexture()
+{
+    Animation* newAnim = nullptr;
 
-        sprite.setTextureRect(rect);
+    switch (state)
+    {
+    case PlayerState::Idle:  newAnim = &idleAnim; break;
+    case PlayerState::Running: newAnim = &runAnim; break;
+    case PlayerState::Jumping: /* future jump anim */ break;
+    }
 
-        // ✅ use rect.size in SFML 3
-        sprite.setOrigin(sf::Vector2f(rect.size.x / 2.f, rect.size.y / 2.f));
+    if (currentAnim != newAnim && newAnim != nullptr)
+    {
+        currentAnim = newAnim;
+        sprite->setTexture(*currentAnim->texture, true);
+
+        m_frameNow = 0;
+        m_frameCount = 0.f;
+
+        sf::IntRect firstFrame(
+            sf::Vector2i(0, 0),
+            sf::Vector2i(currentAnim->frameWidth, currentAnim->frameHeight)
+        );
+        sprite->setTextureRect(firstFrame);
+        sprite->setOrigin(sf::Vector2f(currentAnim->frameWidth / 2.f, currentAnim->frameHeight / 2.f));
     }
 }
 
 void player::Update(float dt)
 {
+    if (!isOnGround)
+        state = PlayerState::Jumping;
+    else if (velocity.x != 0)
+        state = PlayerState::Running;
+    else
+        state = PlayerState::Idle;
+
     AnimatePlayer();
 
+ 
     if (velocity.x > maxSpeed) velocity.x = maxSpeed;
     if (velocity.x < -maxSpeed) velocity.x = -maxSpeed;
-
 
     velocity.y += gravity * dt;
 
@@ -63,7 +101,7 @@ void player::Update(float dt)
     }
 
     pos += velocity * dt;
-    sprite.setPosition(pos);
+    sprite->setPosition(pos);
 
     if (pos.y >= Groundlevel)
     {
@@ -76,3 +114,4 @@ void player::Update(float dt)
         isOnGround = false;
     }
 }
+

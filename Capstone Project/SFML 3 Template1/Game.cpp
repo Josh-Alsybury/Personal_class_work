@@ -115,6 +115,7 @@ void Game::update(sf::Time t_deltaTime)
 {
 	checkKeyboardState();
 
+
 	sf::Vector2f direction{ 0.0f, 0.0f };
 
 
@@ -154,7 +155,7 @@ void Game::render()
 
 	m_background.render(m_window);
 
-	m_window.draw(m_Player.sprite);
+	m_window.draw(*m_Player.sprite);
 	
 	m_window.display();
 }
