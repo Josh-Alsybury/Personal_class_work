@@ -25,6 +25,13 @@ void player::moveRight()
     }
 }
 
+void player::Attack()
+{
+    if(velocity.x == 0.f)
+        if (isOnGround)
+            isAttack = true;
+}
+
 void player::AnimatePlayer()
 {
     UpdateAnimationTexture();
@@ -42,6 +49,9 @@ void player::AnimatePlayer()
         sprite->setTextureRect(rect);
         sprite->setOrigin(sf::Vector2f(currentAnim->frameWidth / 2.f, currentAnim->frameHeight / 2.f));
     }
+
+    if (state == PlayerState::Attack && m_frameNow == attackAnim.frameCount - 1)
+        isAttack = false;
 }
 
 void player::UpdateAnimationTexture()
@@ -52,6 +62,7 @@ void player::UpdateAnimationTexture()
     {
     case PlayerState::Idle:  newAnim = &idleAnim; break;
     case PlayerState::Running: newAnim = &runAnim; break;
+    case PlayerState::Attack: newAnim = &attackAnim; break;
     case PlayerState::Jumping: /* future jump anim */ break;
     }
 
@@ -78,6 +89,8 @@ void player::Update(float dt)
         state = PlayerState::Jumping;
     else if (velocity.x != 0)
         state = PlayerState::Running;
+    else if (isAttack == true)
+        state = PlayerState::Attack;
     else
         state = PlayerState::Idle;
 

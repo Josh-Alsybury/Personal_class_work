@@ -6,11 +6,13 @@ class player
 public:
     sf::Texture idleTexture;
     sf::Texture runTexture;
+    sf::Texture attackTexture;
     std::unique_ptr<sf::Sprite> sprite;
     sf::Vector2f pos;
     sf::Vector2f velocity;
 
     bool isOnGround = true;
+    bool isAttack = false;
 
     float speed = 200.f;       
     float maxSpeed = 550.f;    
@@ -32,6 +34,10 @@ public:
         {
             throw std::runtime_error("Failed to load IDLE.png!");
         }
+        if (!attackTexture.loadFromFile("ASSETS/IMAGES/Sprites/ATTACK 1.png"))
+        {
+            throw std::runtime_error("Failed to load ATTACK 1.png!");
+        }
 
         idleAnim.texture = &idleTexture;
         idleAnim.frameCount = 10;
@@ -43,6 +49,10 @@ public:
         runAnim.frameWidth = 96;
         runAnim.frameHeight = 96;
 
+        attackAnim.texture = &attackTexture;
+        attackAnim.frameCount = 7;   
+        attackAnim.frameWidth = 96;
+        attackAnim.frameHeight = 96;
 
         sprite = std::make_unique<sf::Sprite>(idleTexture);
         sprite->setScale(sf::Vector2f(1.8f, 1.8f));
@@ -57,7 +67,8 @@ public:
     {
         Idle,
         Running,
-        Jumping
+        Jumping,
+        Attack
     };
 
     struct Animation {
@@ -69,6 +80,7 @@ public:
 
     Animation idleAnim;
     Animation runAnim;
+    Animation attackAnim;
     Animation* currentAnim;
     bool facingRight = true;
 
@@ -84,6 +96,7 @@ public:
     void Jump();
     void moveLeft();
     void moveRight();
+    void Attack();
 
     void AnimatePlayer();
     void UpdateAnimationTexture();

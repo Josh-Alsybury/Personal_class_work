@@ -138,6 +138,10 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_Player.Jump();
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	{
+		m_Player.Attack();
+	}
 
 	float leftMargin = m_screenMargin;
 	float rightMargin = m_window.getSize().x - m_screenMargin;
