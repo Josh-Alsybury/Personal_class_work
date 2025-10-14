@@ -1,5 +1,7 @@
 ﻿#include "Player.h"
 #include <cmath> 
+#include <aubio/aubio.h>
+
 
 void player::Jump()
 {
