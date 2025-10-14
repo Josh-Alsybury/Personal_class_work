@@ -1,23 +1,17 @@
 #pragma once
-#include<iostream>
-#include<aubio/aubio.h>
-
-//Low BPM >=90 
-//medium BPM  90 to 120 
-//high BPM <120  
-
+#include <aubio/aubio.h>
+#include <iostream>
 class BPM
 {
 public:
-	BPM(float smoothing = 0.9f);
-	~BPM();
+    BPM(float smoothing = 0.9f);
+    ~BPM();
 
     bool loadFile(const std::string& filePath);
     void update(); 
     float getBPM() const;
     std::string getBPMState() const; 
-    float getIntensityMultiplier() const;
-
+    float getIntensityMultiplier() const; 
 
 private:
 
