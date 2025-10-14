@@ -1,13 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+
 #pragma once
 class player
 {
 public:
     sf::Texture idleTexture;
     sf::Texture runTexture;
+
     sf::Texture attackTexture;
     sf::Texture defendTexture;
+
+    sf::Texture jump_startTexture;
+    sf::Texture jumpTexture;
+    sf::Texture jump_endTexture;
+
     std::unique_ptr<sf::Sprite> sprite;
     sf::Vector2f pos;
     sf::Vector2f velocity;
@@ -15,6 +22,7 @@ public:
     bool isOnGround = true;
     bool isAttack = false;
     bool isDefend = false;
+    bool isJump = false;
 
     float speed = 200.f;       
     float maxSpeed = 550.f;    
@@ -44,6 +52,19 @@ public:
         {
             throw std::runtime_error("Failed to load DEFEND.png!");
         }
+        if (!jump_startTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP-START.png"))
+        {
+            throw std::runtime_error("Failed to load DEFEND.png!");
+        }
+        if (!jumpTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP.png"))
+        {
+            throw std::runtime_error("Failed to load DEFEND.png!");
+        }
+        if (!jump_endTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP-FALL.png"))
+        {
+            throw std::runtime_error("Failed to load DEFEND.png!");
+        }
+
 
         idleAnim.texture = &idleTexture;
         idleAnim.frameCount = 10;
@@ -65,6 +86,21 @@ public:
         defendAnim.frameWidth = 96;
         defendAnim.frameHeight = 96;
 
+        jump_startAnim.texture = &jump_startTexture;
+        jump_startAnim.frameCount = 3;
+        jump_startAnim.frameWidth = 96;
+        jump_startAnim.frameHeight = 96;
+
+        jumpAnim.texture = &jumpTexture;
+        jumpAnim.frameCount = 3;
+        jumpAnim.frameWidth = 96;
+        jumpAnim.frameHeight = 96;
+
+        jump_endAnim.texture = &jump_endTexture;
+        jump_endAnim.frameCount = 3;
+        jump_endAnim.frameWidth = 96;
+        jump_endAnim.frameHeight = 96;
+
         sprite = std::make_unique<sf::Sprite>(idleTexture);
         sprite->setScale(sf::Vector2f(1.8f, 1.8f));
 
@@ -80,7 +116,10 @@ public:
         Running,
         Jumping,
         Attack,
-        Defend
+        Defend,
+        Jump_start,
+        Jump,
+        Jump_end
     };
 
     struct Animation {
@@ -94,6 +133,9 @@ public:
     Animation runAnim;
     Animation attackAnim;
     Animation defendAnim;
+    Animation jump_startAnim;
+    Animation jumpAnim;
+    Animation jump_endAnim;
     Animation* currentAnim;
     bool facingRight = true;
 
@@ -101,7 +143,6 @@ public:
     {
         pos = { 90.f, 750.f };
         velocity = { 0.f, 0.f };
-       
     }
 
     PlayerState state = PlayerState::Idle;

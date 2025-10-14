@@ -1,12 +1,14 @@
 ﻿#include "Player.h"
 #include <cmath> 
-#include <aubio/aubio.h>
 
 
 void player::Jump()
 {
     if (isOnGround)
-        velocity.y -= 80;
+        velocity.y -= 90;
+        isJump = true;
+        isOnGround = false;
+        state = PlayerState::Jump_start;
 }
 
 void player::moveLeft()
@@ -59,7 +61,8 @@ void player::AnimatePlayer()
         sprite->setOrigin(sf::Vector2f(currentAnim->frameWidth / 2.f, currentAnim->frameHeight / 2.f));
     }
 
-    if (state == PlayerState::Attack && m_frameNow == attackAnim.frameCount - 1|| state == PlayerState::Defend && m_frameNow == attackAnim.frameCount - 1)
+    if ((state == PlayerState::Attack && m_frameNow == attackAnim.frameCount - 1) ||
+        (state == PlayerState::Defend && m_frameNow == defendAnim.frameCount - 1))
         isAttack = false;
         isDefend = false;
 }
@@ -74,7 +77,9 @@ void player::UpdateAnimationTexture()
     case PlayerState::Running: newAnim = &runAnim; break;
     case PlayerState::Attack: newAnim = &attackAnim; break;
     case PlayerState::Defend: newAnim = &defendAnim; break;
-    case PlayerState::Jumping: /* future jump anim */ break;
+    case PlayerState::Jump_start: newAnim = &jump_startAnim; break;
+    case PlayerState::Jump: newAnim = &jumpAnim; break;
+    case PlayerState::Jump_end: newAnim = &jump_endAnim; break;
     }
 
     if (currentAnim != newAnim && newAnim != nullptr)
@@ -97,16 +102,34 @@ void player::UpdateAnimationTexture()
 void player::Update(float dt)
 {
     if (!isOnGround)
-        state = PlayerState::Jumping;
-    else if (velocity.x != 0)
-        state = PlayerState::Running;
-    else if (isAttack == true)
-        state = PlayerState::Attack;
-    else if (isDefend == true)
-        state = PlayerState::Defend;
+    {
+        if (state == PlayerState::Jump_start)
+        {
+            if (m_frameNow >= jump_startAnim.frameCount - 1 && velocity.y >= 0)
+            {
+                state = PlayerState::Jump_end;
+            }
+        }
+        else if (velocity.y > 0)
+        {
+            state = PlayerState::Jump_end;
+        }
+    }
     else
-        state = PlayerState::Idle;
-
+    {
+        if (isJump)
+        {
+            isJump = false;
+        }
+        if (isAttack)
+            state = PlayerState::Attack;
+        else if (isDefend)
+            state = PlayerState::Defend;
+        else if (std::abs(velocity.x) > 0)
+            state = PlayerState::Running;
+        else
+            state = PlayerState::Idle;
+    }
     AnimatePlayer();
 
  

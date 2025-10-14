@@ -23,8 +23,6 @@ Game::Game() :
 	m_backgroundLayers.emplace_back("ASSETS/IMAGES/Autumn Forest 2D Pixel Art/Background/1.png", 0.5f);
 
 
-
-
 	m_Player.pos.x = m_window.getSize().x / 2.f;
 	setupSprites(); // load texture
 	m_Player.SetupPlayer();
