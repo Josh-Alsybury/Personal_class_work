@@ -28,6 +28,7 @@ Game::Game() :
 	setupTexts();   // load font
 	m_Player.SetupPlayer();
 	m_Player.HealCall();
+	m_Player.Health();
 	initNPCs();
 
 }
@@ -111,6 +112,10 @@ void Game::checkKeyboardState()
 	{
 		m_DELETEexitGame = true; 
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P))
+	{
+		m_Player.TakeDamage(1);
+	}
 }
 
 /// <summary>
@@ -190,12 +195,16 @@ void Game::render()
 	{
 		layer.render(m_window);
 	}
+
 	for (int i = 0; i < m_Player.HealsCount; i++)
 	{
 		m_window.draw(m_Player.HealSphere[i]);
 	}
-	
 
+	for (auto& bar : m_Player.HealBar)
+	{
+		m_window.draw(bar);
+	}
 	m_window.draw(*m_Player.sprite);
 	m_window.display();
 }
@@ -209,9 +218,7 @@ void Game::setupTexts()
 	{
 		std::cout << "Error loading font!\n";
 	}
-	
 }
-
 
 
 /// <summary>

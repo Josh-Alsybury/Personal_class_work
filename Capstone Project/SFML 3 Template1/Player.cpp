@@ -52,6 +52,7 @@ void player::Heal()
     }
 }
 
+
 void player::AnimatePlayer()
 {
     UpdateAnimationTexture();
@@ -76,10 +77,12 @@ void player::AnimatePlayer()
     {
         if (state == PlayerState::Healing)
         {
-            if (HealsCount > 0)
+            if (HealsCount > 0 || health != MAX_HEALTH)
             {
-                HealsCount -= 1;   
+                HealsCount -= 1;
+                health = MAX_HEALTH;
                 HealCall();
+                Health();
             }
         }
 
@@ -122,6 +125,20 @@ void player::UpdateAnimationTexture()
     }
 }
 
+void player::Health()
+{
+    HealBar.clear();
+
+    for (int i = 0; i < health; ++i)
+    {
+        sf::RectangleShape bar;
+        bar.setSize({ 25.f, 25.f });
+        bar.setFillColor(sf::Color::Red);
+        bar.setPosition({ 10.f + (i * 32.f), 15.f });
+        HealBar.push_back(bar);
+    }
+}
+
 void player::HealCall()
 {
     if (HealSphere.size() != HealsCount)
@@ -133,9 +150,16 @@ void player::HealCall()
         {
             HealSphere[i].setRadius(10);
             HealSphere[i].setFillColor(sf::Color::White);
-            HealSphere[i].setPosition({ 10 + (i * 32.f), 15 });
+            HealSphere[i].setPosition({ 10 + (i * 32.f),  50.f });
         }
     }
+}
+
+void player::TakeDamage(int amount)
+{
+    health -= 1;
+    if (health < 0) health = 0;
+    Health();
 }
 
 void player::Update(float dt)

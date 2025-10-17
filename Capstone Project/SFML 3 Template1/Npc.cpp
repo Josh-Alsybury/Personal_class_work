@@ -59,8 +59,6 @@ SterringOutput Npc::ArriveToSlot(const sf::Vector2f& targetPos, float slowRadius
 }
 
 
-
-
 void Npc::Update(const SterringOutput& steering, float deltaTime)
 {
     velocity += steering.linear * deltaTime;

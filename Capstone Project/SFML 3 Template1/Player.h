@@ -39,6 +39,9 @@ public:
 
     std::vector<sf::CircleShape> HealSphere;
     int HealsCount = 2;
+    std::vector<sf::RectangleShape> HealBar;
+    int health = 5;
+    static constexpr int MAX_HEALTH = 5;
 
     void SetupPlayer()
     {
@@ -74,7 +77,6 @@ public:
         {
             throw std::runtime_error("Failed to load HEal end.png!");
         }
-
 
         idleAnim.texture = &idleTexture;
         idleAnim.frameCount = 10;
@@ -170,11 +172,13 @@ public:
     void Attack();
     void Defend();
     void Heal();
+    void Health();
 
     void AnimatePlayer();
     void UpdateAnimationTexture();
 
     void HealCall();
+    void TakeDamage(int amount);
     void Update(float dt); 
 };
 
