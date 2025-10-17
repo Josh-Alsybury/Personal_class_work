@@ -15,6 +15,8 @@ public:
     sf::Texture jumpTexture;
     sf::Texture jump_endTexture;
 
+    sf::Texture healTexture;
+
     std::unique_ptr<sf::Sprite> sprite;
     sf::Vector2f pos;
     sf::Vector2f velocity;
@@ -23,6 +25,7 @@ public:
     bool isAttack = false;
     bool isDefend = false;
     bool isJump = false;
+    bool isHealing = false;
 
     float speed = 200.f;       
     float maxSpeed = 550.f;    
@@ -33,6 +36,9 @@ public:
     int m_frameNow{ 0 };
     float m_frameCount{ 0.0f };
     float m_framePlus{ 0.2f };
+
+    std::vector<sf::CircleShape> HealSphere;
+    int HealsCount = 2;
 
     void SetupPlayer()
     {
@@ -54,15 +60,19 @@ public:
         }
         if (!jump_startTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP-START.png"))
         {
-            throw std::runtime_error("Failed to load DEFEND.png!");
+            throw std::runtime_error("Failed to load JUMP start.png!");
         }
         if (!jumpTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP.png"))
         {
-            throw std::runtime_error("Failed to load DEFEND.png!");
+            throw std::runtime_error("Failed to load JUMP.png!");
         }
         if (!jump_endTexture.loadFromFile("ASSETS/IMAGES/Sprites/JUMP-FALL.png"))
         {
-            throw std::runtime_error("Failed to load DEFEND.png!");
+            throw std::runtime_error("Failed to load JUMP end.png!");
+        }
+        if (!healTexture.loadFromFile("ASSETS/IMAGES/Sprites/HEALING.png"))
+        {
+            throw std::runtime_error("Failed to load HEal end.png!");
         }
 
 
@@ -101,6 +111,11 @@ public:
         jump_endAnim.frameWidth = 96;
         jump_endAnim.frameHeight = 96;
 
+        healAnim.texture = &healTexture;
+        healAnim.frameCount = 15;
+        healAnim.frameWidth = 96;
+        healAnim.frameHeight = 96;
+
         sprite = std::make_unique<sf::Sprite>(idleTexture);
         sprite->setScale(sf::Vector2f(1.8f, 1.8f));
 
@@ -119,7 +134,8 @@ public:
         Defend,
         Jump_start,
         Jump,
-        Jump_end
+        Jump_end,
+        Healing
     };
 
     struct Animation {
@@ -136,6 +152,7 @@ public:
     Animation jump_startAnim;
     Animation jumpAnim;
     Animation jump_endAnim;
+    Animation healAnim;
     Animation* currentAnim;
     bool facingRight = true;
 
@@ -152,10 +169,12 @@ public:
     void moveRight();
     void Attack();
     void Defend();
+    void Heal();
 
     void AnimatePlayer();
     void UpdateAnimationTexture();
 
+    void HealCall();
     void Update(float dt); 
 };
 

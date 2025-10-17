@@ -43,6 +43,15 @@ void player::Defend()
             isDefend = true;
 }
 
+void player::Heal()
+{
+    if (isOnGround && !isHealing && HealsCount > 0)
+    {
+        isHealing = true;
+        state = PlayerState::Healing;
+    }
+}
+
 void player::AnimatePlayer()
 {
     UpdateAnimationTexture();
@@ -62,9 +71,22 @@ void player::AnimatePlayer()
     }
 
     if ((state == PlayerState::Attack && m_frameNow == attackAnim.frameCount - 1) ||
-        (state == PlayerState::Defend && m_frameNow == defendAnim.frameCount - 1))
+        (state == PlayerState::Defend && m_frameNow == defendAnim.frameCount - 1) ||
+        (state == PlayerState::Healing && m_frameNow == healAnim.frameCount - 1))
+    {
+        if (state == PlayerState::Healing)
+        {
+            if (HealsCount > 0)
+            {
+                HealsCount -= 1;   
+                HealCall();
+            }
+        }
+
         isAttack = false;
         isDefend = false;
+        isHealing = false;
+    }
 }
 
 void player::UpdateAnimationTexture()
@@ -80,6 +102,7 @@ void player::UpdateAnimationTexture()
     case PlayerState::Jump_start: newAnim = &jump_startAnim; break;
     case PlayerState::Jump: newAnim = &jumpAnim; break;
     case PlayerState::Jump_end: newAnim = &jump_endAnim; break;
+    case PlayerState::Healing: newAnim = &healAnim; break;
     }
 
     if (currentAnim != newAnim && newAnim != nullptr)
@@ -96,6 +119,22 @@ void player::UpdateAnimationTexture()
         );
         sprite->setTextureRect(firstFrame);
         sprite->setOrigin(sf::Vector2f(currentAnim->frameWidth / 2.f, currentAnim->frameHeight / 2.f));
+    }
+}
+
+void player::HealCall()
+{
+    if (HealSphere.size() != HealsCount)
+    {
+        HealSphere.clear();
+        HealSphere.resize(HealsCount);
+
+        for (int i = 0; i < HealsCount; i++)
+        {
+            HealSphere[i].setRadius(10);
+            HealSphere[i].setFillColor(sf::Color::White);
+            HealSphere[i].setPosition({ 10 + (i * 32.f), 15 });
+        }
     }
 }
 
@@ -125,6 +164,8 @@ void player::Update(float dt)
             state = PlayerState::Attack;
         else if (isDefend)
             state = PlayerState::Defend;
+        else if (isHealing)
+            state = PlayerState::Healing;
         else if (std::abs(velocity.x) > 0)
             state = PlayerState::Running;
         else

@@ -4,10 +4,12 @@ BPM::BPM(float smoothing)
 	: source(nullptr), tempo(nullptr), buffer(nullptr),
 	  bpm(0.0f), smoothedBPM(0.0f), smoothingFactor(smoothing)
 {
+
 }
 
 BPM::~BPM()
 {
+
 }
 
 bool BPM::loadFile(const std::string& filePath)

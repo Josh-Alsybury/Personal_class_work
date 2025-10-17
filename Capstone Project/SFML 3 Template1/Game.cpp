@@ -25,9 +25,11 @@ Game::Game() :
 
 	m_Player.pos.x = m_window.getSize().x / 2.f;
 	setupSprites(); // load texture
-	m_Player.SetupPlayer();
-	initNPCs();
 	setupTexts();   // load font
+	m_Player.SetupPlayer();
+	m_Player.HealCall();
+	initNPCs();
+
 }
 
 /// <summary>
@@ -98,7 +100,6 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 	{
 		m_DELETEexitGame = true; 
 	}
-
 }
 
 /// <summary>
@@ -136,14 +137,19 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_Player.Jump();
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
 	{
 		m_Player.Attack();
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
 	{
 		m_Player.Defend();
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))
+	{
+		m_Player.Heal();
+	}
+
 
 	float leftMargin = m_screenMargin;
 	float rightMargin = m_window.getSize().x - m_screenMargin;
@@ -171,9 +177,6 @@ void Game::update(sf::Time t_deltaTime)
 }
 
 
-
-
-
 /// <summary>
 /// draw the frame and then switch buffers
 /// </summary>
@@ -187,10 +190,13 @@ void Game::render()
 	{
 		layer.render(m_window);
 	}
+	for (int i = 0; i < m_Player.HealsCount; i++)
+	{
+		m_window.draw(m_Player.HealSphere[i]);
+	}
 	
 
 	m_window.draw(*m_Player.sprite);
-	
 	m_window.display();
 }
 
