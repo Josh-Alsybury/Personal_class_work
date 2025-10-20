@@ -21,6 +21,8 @@
 #include "Player.h"
 #include "Npc.h"
 #include "Background.h"
+#include "BPM.h"
+
 
 
 const sf::Color WHITE{ 0, 0,0,0 }; // const colour
