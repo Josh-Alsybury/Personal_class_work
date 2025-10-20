@@ -38,10 +38,12 @@ public:
 
 private:
 	
+	BPM m_bpmAnalyzer;
+	float m_basePlayerSpeed = 250.f;
+	float m_baseScrollSpeed = 100.f;
+
 	sf::Vector2f m_cameraOffset{ 100.f, 0.f };
 	const float m_screenMargin = 200.f;
-
-
 
 	void processEvents();
 	void processKeys(const std::optional<sf::Event> t_event);
