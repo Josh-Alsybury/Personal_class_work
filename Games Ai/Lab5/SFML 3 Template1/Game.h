@@ -25,17 +25,23 @@ const sf::Color ULTRAMARINE{ 5, 55,242,255 }; // const colour
 const int GRID_WIDTH = 50;
 const int GRID_HEIGHT = 50;
 const int TILE_SIZE = 16;
-enum class Direction { None,Up,Down,Left,Right};
 enum class TileType{Empty,Wall,Start,Goal};
+enum class ViewMode { Normal, Cost, Integration};
+extern ViewMode m_viewMode;
+extern sf::Font m_font;
+
 
 struct Tile
 {
 	sf::RectangleShape shape;
 	TileType type = TileType::Empty;
-	int cost = std::numeric_limits<int>::max();
-	Direction flowDirection = Direction::None;
+	int integrationCost = std::numeric_limits<int>::max(); 
+	int terrainCost = 1; 
+	sf::Vector2f flowVector{ 0.f, 0.f }; 
+
 	bool isOnPath = false;
 };
+
 
 
 class Game
