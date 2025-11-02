@@ -42,7 +42,14 @@ struct Tile
 	bool isOnPath = false;
 };
 
+struct Agent
+{
+	sf::Vector2i position{ -1, -1 };
+	sf::Vector2i startPosition{ -1, -1 };
+	sf::Color color;
 
+	bool isMoving = false;
+};
 
 class Game
 {
@@ -51,7 +58,7 @@ public:
 	~Game();
 	void run();
 
-	
+	int AgentCount = 0;
 
 private:
 
@@ -73,14 +80,13 @@ private:
 	void moveCharacter(sf::Time t_deltaTime);
 
 	std::vector<std::vector<Tile>> m_grid;
-	sf::Vector2i m_startPos{ -1, -1 };
 	sf::Vector2i m_goalPos{ -1, -1 };
-	sf::Vector2i m_currentAgentPos{ -1, -1 };
+	std::vector<Agent> m_agents;
 
 	sf::RenderWindow m_window; // main SFML window
 	sf::Font m_jerseyFont;// font used by message
 	bool m_exitGame{ false };
-
+	bool m_agentsMoving{ false };
 };
 
 #pragma warning( pop ) 

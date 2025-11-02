@@ -80,6 +80,13 @@ void Game::processKeys(const sf::Event::KeyPressed* t_keypress)
 		else
 			m_viewMode = ViewMode::Normal;
 	}
+	else if (sf::Keyboard::Key::Space == t_keypress->code)
+	{
+		for (auto& agent : m_agents)
+		{
+			agent.isMoving = !agent.isMoving;
+		}
+	}
 }
 
 void Game::checkKeyboardState()
@@ -142,7 +149,7 @@ void Game::render()
 	}
 
 	sf::RectangleShape controlsBackground;
-	controlsBackground.setSize(sf::Vector2f(170.f, 135.f));
+	controlsBackground.setSize(sf::Vector2f(170.f, 145.f));
 	controlsBackground.setFillColor(sf::Color::Black);
 	controlsBackground.setPosition(sf::Vector2f(620.f, 10.f));
 	m_window.draw(controlsBackground);
@@ -155,6 +162,7 @@ void Game::render()
 		"Controls:\n"
 		"Left Mouse: Set Goal\n"
 		"Right Mouse: Set Start\n"
+		"( Capped at 5) \n"
 		"Middle Mouse: Toggle Wall\n"
 		"Space: Toggle Agent Move\n"
 		"Q: Switch View\n"
@@ -199,42 +207,56 @@ void Game::handleMouseInput(const sf::Event::MouseButtonPressed& event)
 {
 	int x = event.position.x / TILE_SIZE;
 	int y = event.position.y / TILE_SIZE;
-
 	if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
 		return;
-
 	if (event.button == sf::Mouse::Button::Left)
 	{
 		if (m_goalPos.x != -1)
 			m_grid[m_goalPos.y][m_goalPos.x].type = TileType::Empty;
-
 		m_goalPos = { x, y };
 		m_grid[y][x].type = TileType::Goal;
 	}
-
 	else if (event.button == sf::Mouse::Button::Right)
 	{
-		if (m_startPos.x != -1)
-			m_grid[m_startPos.y][m_startPos.x].type = TileType::Empty;
+		const int MAX_AGENTS = 5;
+		bool agentRemoved = false;
+		for (int i = 0; i < m_agents.size(); ++i)
+		{
+			if (m_agents[i].position == sf::Vector2i(x, y))
+			{
+				m_agents.erase(m_agents.begin() + i);
+				agentRemoved = true;
+				AgentCount -= 1;
+				break;
+			}
+		}
 
-		m_startPos = { x, y };
-		m_currentAgentPos = m_startPos;
-		m_grid[y][x].type = TileType::Start;
+		if (!agentRemoved && AgentCount != MAX_AGENTS)
+		{
+			Agent newAgent;
+			AgentCount += 1;
+			newAgent.position = { x, y };
+			newAgent.startPosition = { x, y };
+			sf::Color agentColors[] = {
+				sf::Color::Green, sf::Color::Cyan, sf::Color::Magenta,
+				sf::Color::Yellow, sf::Color(255, 165, 0)
+			};
+			newAgent.color = agentColors[m_agents.size() % 5];
+			m_agents.push_back(newAgent);
+			
+		}
 	}
-
 	else if (event.button == sf::Mouse::Button::Middle)
 	{
-		if (sf::Vector2i(x, y) != m_startPos && sf::Vector2i(x, y) != m_goalPos)
+		if (sf::Vector2i(x, y) != m_goalPos)
 		{
 			Tile& t = m_grid[y][x];
 			t.type = (t.type == TileType::Empty) ? TileType::Wall : TileType::Empty;
 		}
 	}
-
 	updateGridColors();
 	calculateFlowField();
 }
-
 
 void Game::updateGridColors()
 {
@@ -244,26 +266,34 @@ void Game::updateGridColors()
 		{
 			Tile& t = m_grid[y][x];
 			sf::Color color;
-
-			if (m_currentAgentPos == sf::Vector2i(x, y))
-				color = sf::Color::Yellow;
-			else if (t.isOnPath)
-				color = sf::Color(255, 255, 100);
-
-			else if (t.integrationCost < std::numeric_limits<int>::max() && t.type == TileType::Empty)
+			bool agentHere = false;
+			for (const auto& agent : m_agents)
 			{
-				int shade = 255 - std::min(255, t.integrationCost * 10);
-				color = sf::Color(shade, shade, 255);
-			}
-
-			else
-			{
-				switch (t.type)
+				if (agent.position == sf::Vector2i(x, y))
 				{
-				case TileType::Empty: color = sf::Color(0, 0, 100); break;
-				case TileType::Wall:  color = sf::Color::Black; break;
-				case TileType::Start: color = sf::Color::Green; break;
-				case TileType::Goal:  color = sf::Color::Red; break;
+					color = agent.color;
+					agentHere = true;
+					break;
+				}
+			}
+			if (!agentHere)
+			{
+				if (t.isOnPath)
+					color = sf::Color(255, 255, 100);
+				else if (t.integrationCost < std::numeric_limits<int>::max() && t.type == TileType::Empty)
+				{
+					int shade = 255 - std::min(255, t.integrationCost * 10);
+					color = sf::Color(shade, shade, 255);
+				}
+				else
+				{
+					switch (t.type)
+					{
+					case TileType::Empty: color = sf::Color(0, 0, 100); break;
+					case TileType::Wall:  color = sf::Color::Black; break;
+					case TileType::Start: color = sf::Color::Green; break;
+					case TileType::Goal:  color = sf::Color::Red; break;
+					}
 				}
 			}
 			t.shape.setFillColor(color);
@@ -358,53 +388,46 @@ void Game::calculateFlowField()
 
 void Game::moveCharacter(sf::Time t_deltaTime)
 {
-	static bool moving = false;
-	static bool spaceHeld = false;
+	if (m_goalPos.x == -1)
+		return;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	static sf::Clock moveClock;
+	static const float moveDelay = 0.1f;
+
+	if (moveClock.getElapsedTime().asSeconds() < moveDelay)
+		return;
+
+	moveClock.restart();
+
+	for (auto& agent : m_agents)
 	{
-		if (!spaceHeld)
+		if (!agent.isMoving || agent.position.x == -1)
+			continue;
+
+		if (agent.position == m_goalPos)
 		{
-			moving = !moving;
-			spaceHeld = true;
+			agent.position = agent.startPosition;
+			agent.isMoving = false;
+			continue;
 		}
+
+		Tile& tile = m_grid[agent.position.y][agent.position.x];
+		sf::Vector2f dir = tile.flowVector;
+
+		if (dir == sf::Vector2f(0.f, 0.f))
+			continue;
+
+		sf::Vector2i next = {
+			agent.position.x + static_cast<int>(std::round(dir.x)),
+			agent.position.y + static_cast<int>(std::round(dir.y))
+		};
+
+		if (next.x < 0 || next.x >= GRID_WIDTH || next.y < 0 || next.y >= GRID_HEIGHT)
+			continue;
+
+		m_grid[agent.position.y][agent.position.x].isOnPath = true;
+		agent.position = next;
 	}
-	else
-	{
-		spaceHeld = false;
-	}
-
-	if (!moving || m_currentAgentPos.x == -1 || m_goalPos.x == -1)
-		return;
-
-	if (m_currentAgentPos == m_goalPos)
-	{
-		moving = false;
-		return;
-	}
-
-	Tile& tile = m_grid[m_currentAgentPos.y][m_currentAgentPos.x];
-	sf::Vector2f dir = tile.flowVector;
-
-	if (dir == sf::Vector2f(0.f, 0.f))
-	{
-		moving = false;
-		return;
-	}
-
-	sf::Vector2i next = {
-		m_currentAgentPos.x + static_cast<int>(std::round(dir.x)),
-		m_currentAgentPos.y + static_cast<int>(std::round(dir.y))
-	};
-
-	if (next.x < 0 || next.x >= GRID_WIDTH || next.y < 0 || next.y >= GRID_HEIGHT)
-	{
-		moving = false;
-		return;
-	}
-
-	m_grid[m_currentAgentPos.y][m_currentAgentPos.x].isOnPath = true;
-	m_currentAgentPos = next;
 
 	updateGridColors();
 }
