@@ -26,7 +26,7 @@ const int GRID_WIDTH = 50;
 const int GRID_HEIGHT = 50;
 const int TILE_SIZE = 16;
 enum class TileType{Empty,Wall,Start,Goal};
-enum class ViewMode { Normal, Cost, Integration};
+enum class ViewMode { Normal, Cost, Integration, HeatMap, VectorField};
 extern ViewMode m_viewMode;
 extern sf::Font m_font;
 
@@ -59,6 +59,8 @@ public:
 	void run();
 
 	int AgentCount = 0;
+    sf::VertexArray m_flowVectors{ sf::PrimitiveType::Lines };
+
 
 private:
 

@@ -73,12 +73,14 @@ void Game::processKeys(const sf::Event::KeyPressed* t_keypress)
 	}
 	else if (sf::Keyboard::Key::Q == t_keypress->code)
 	{
-		if (m_viewMode == ViewMode::Normal)
-			m_viewMode = ViewMode::Cost;
-		else if (m_viewMode == ViewMode::Cost)
-			m_viewMode = ViewMode::Integration;
-		else
-			m_viewMode = ViewMode::Normal;
+		switch (m_viewMode)
+		{
+		case ViewMode::Normal: m_viewMode = ViewMode::Cost; break;
+		case ViewMode::Cost: m_viewMode = ViewMode::Integration; break;
+		case ViewMode::Integration: m_viewMode = ViewMode::HeatMap; break;
+		case ViewMode::HeatMap: m_viewMode = ViewMode::VectorField; break;
+		default: m_viewMode = ViewMode::Normal; break;
+		}
 	}
 	else if (sf::Keyboard::Key::Space == t_keypress->code)
 	{
@@ -149,7 +151,7 @@ void Game::render()
 	}
 
 	sf::RectangleShape controlsBackground;
-	controlsBackground.setSize(sf::Vector2f(170.f, 145.f));
+	controlsBackground.setSize(sf::Vector2f(170.f, 185.f));
 	controlsBackground.setFillColor(sf::Color::Black);
 	controlsBackground.setPosition(sf::Vector2f(620.f, 10.f));
 	m_window.draw(controlsBackground);
@@ -168,9 +170,16 @@ void Game::render()
 		"Q: Switch View\n"
 		"  - Normal\n"
 		"  - Cost Field\n"
-		"  - Integration Field"
+		"  - Integration Field\n"
+		"  - Heat map\n"
+		"  - Vector Feild"
 	);
 	m_window.draw(controlsText);
+
+	if (m_viewMode == ViewMode::VectorField)
+	{
+		m_window.draw(m_flowVectors);
+	}
 
 	m_window.display();
 }
@@ -266,33 +275,46 @@ void Game::updateGridColors()
 		{
 			Tile& t = m_grid[y][x];
 			sf::Color color;
-			bool agentHere = false;
-			for (const auto& agent : m_agents)
+			if (t.type == TileType::Goal)
 			{
-				if (agent.position == sf::Vector2i(x, y))
-				{
-					color = agent.color;
-					agentHere = true;
-					break;
-				}
+				color = sf::Color::Red;
 			}
-			if (!agentHere)
+			else if (t.type == TileType::Wall)
 			{
-				if (t.isOnPath)
-					color = sf::Color(255, 255, 100);
-				else if (t.integrationCost < std::numeric_limits<int>::max() && t.type == TileType::Empty)
+				color = sf::Color::Black;
+			}
+			else
+			{
+				bool agentHere = false;
+				for (const auto& agent : m_agents)
 				{
-					int shade = 255 - std::min(255, t.integrationCost * 10);
-					color = sf::Color(shade, shade, 255);
-				}
-				else
-				{
-					switch (t.type)
+					if (agent.position == sf::Vector2i(x, y))
 					{
-					case TileType::Empty: color = sf::Color(0, 0, 100); break;
-					case TileType::Wall:  color = sf::Color::Black; break;
-					case TileType::Start: color = sf::Color::Green; break;
-					case TileType::Goal:  color = sf::Color::Red; break;
+						color = agent.color;
+						agentHere = true;
+						break;
+					}
+				}
+				if (!agentHere)
+				{
+					if (t.isOnPath)
+					{
+						color = sf::Color(255, 255, 100);
+					}
+					else if (m_viewMode == ViewMode::HeatMap && t.integrationCost < std::numeric_limits<int>::max())
+					{
+						int heat = std::clamp(255 - t.integrationCost / 4, 0, 255);
+						color = sf::Color(255, heat, 0);
+					}
+					else if ((m_viewMode == ViewMode::Cost || m_viewMode == ViewMode::Integration) &&
+						t.integrationCost < std::numeric_limits<int>::max())
+					{
+						int shade = 255 - std::min(255, t.integrationCost * 10);
+						color = sf::Color(shade, shade, 255);
+					}
+					else
+					{
+						color = sf::Color(0, 0, 100);
 					}
 				}
 			}
@@ -380,7 +402,33 @@ void Game::calculateFlowField()
 			t.flowVector = gradient;
 		}
 	}
+	m_flowVectors.clear();
+	m_flowVectors.setPrimitiveType(sf::PrimitiveType::Lines);
 
+	for (int y = 0; y < GRID_HEIGHT; ++y)
+	{
+		for (int x = 0; x < GRID_WIDTH; ++x)
+		{
+			Tile& t = m_grid[y][x];
+			if (t.type == TileType::Wall)
+				continue;
+
+			sf::Vector2f start = t.shape.getPosition() + sf::Vector2f(TILE_SIZE / 2.f, TILE_SIZE / 2.f);
+			sf::Vector2f dir = t.flowVector * (TILE_SIZE / 2.f);
+
+			sf::Vertex lineStart;
+			sf::Vertex lineEnd;
+
+			lineStart.position = start;
+			lineStart.color = sf::Color::White;
+
+			lineEnd.position = start + dir;
+			lineEnd.color = sf::Color::Cyan;
+
+			m_flowVectors.append(lineStart);
+			m_flowVectors.append(lineEnd);
+		}
+	}
 	updateGridColors();
 }
 
