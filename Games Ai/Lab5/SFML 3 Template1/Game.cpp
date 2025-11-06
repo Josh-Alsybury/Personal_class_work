@@ -1,8 +1,3 @@
-/// <summary>
-/// Author: [Your Name] - [Month Year]
-/// (Change this line or you lose marks!)
-/// </summary>
-
 #include "Game.h"
 #include <iostream>
 #include <queue>
@@ -10,18 +5,22 @@
 ViewMode m_viewMode = ViewMode::Normal;
 sf::Font m_font;
 
+
+// CONSTRUCTOR - Set up the window and game
+
 Game::Game() :
 	m_window{ sf::VideoMode{ {800U, 600U} },  "SFML Flow Field" },
 	m_exitGame{ false }
 {
-	setupGrid();
-	setupTexts();
-	setupSprites();
-	setupAudio();
+	setupGrid();    // Create the 50x50 grid
+	setupTexts();   // Load fonts
+	setupSprites(); // (Empty for now)
+	setupAudio();   // (Empty for now)
 }
 
 Game::~Game() {} 
 
+// MAIN GAME LOOP - Runs at 60 FPS
 
 void Game::run()
 {
@@ -32,8 +31,9 @@ void Game::run()
 
 	while (m_window.isOpen())
 	{
-		processEvents();
+		processEvents(); 
 		timeSinceLastUpdate += clock.restart();
+
 
 		while (timeSinceLastUpdate > timePerFrame)
 		{
@@ -45,7 +45,7 @@ void Game::run()
 	}
 }
 
-
+// HANDLE INPUT - Mouse clicks, keyboard
 void Game::processEvents()
 {
 	while (const std::optional newEvent = m_window.pollEvent())
@@ -65,8 +65,11 @@ void Game::processEvents()
 	}
 }
 
+
+// KEYBOARD CONTROLS
 void Game::processKeys(const sf::Event::KeyPressed* t_keypress)
 {
+	
 	if (sf::Keyboard::Key::Escape == t_keypress->code)
 	{
 		m_exitGame = true;
@@ -75,18 +78,28 @@ void Game::processKeys(const sf::Event::KeyPressed* t_keypress)
 	{
 		switch (m_viewMode)
 		{
-		case ViewMode::Normal: m_viewMode = ViewMode::Cost; break;
-		case ViewMode::Cost: m_viewMode = ViewMode::Integration; break;
-		case ViewMode::Integration: m_viewMode = ViewMode::HeatMap; break;
-		case ViewMode::HeatMap: m_viewMode = ViewMode::VectorField; break;
-		default: m_viewMode = ViewMode::Normal; break;
+		case ViewMode::Normal: 
+			m_viewMode = ViewMode::Cost; 
+			break;
+		case ViewMode::Cost: 
+			m_viewMode = ViewMode::Integration; 
+			break;
+		case ViewMode::Integration: 
+			m_viewMode = ViewMode::HeatMap; 
+			break;
+		case ViewMode::HeatMap: 
+			m_viewMode = ViewMode::VectorField; 
+			break;
+		default: 
+			m_viewMode = ViewMode::Normal; 
+			break;
 		}
 	}
 	else if (sf::Keyboard::Key::Space == t_keypress->code)
 	{
 		for (auto& agent : m_agents)
 		{
-			agent.isMoving = !agent.isMoving;
+			agent.isMoving = !agent.isMoving; 
 		}
 	}
 }
@@ -99,16 +112,22 @@ void Game::checkKeyboardState()
 	}
 }
 
+
+// UPDATE - Move agents
+
 void Game::update(sf::Time t_deltaTime)
 {
 	checkKeyboardState();
-	moveCharacter(t_deltaTime);
+	moveCharacter(t_deltaTime); 
 
 	if (m_exitGame)
 	{
 		m_window.close();
 	}
 }
+
+
+// RENDER - Draw everything to screen
 
 void Game::render()
 {
@@ -119,7 +138,7 @@ void Game::render()
 		for (int x = 0; x < GRID_WIDTH; ++x)
 		{
 			Tile& tile = m_grid[y][x];
-			m_window.draw(tile.shape);
+			m_window.draw(tile.shape); 
 
 			if ((m_viewMode == ViewMode::Cost || m_viewMode == ViewMode::Integration) &&
 				tile.integrationCost < std::numeric_limits<int>::max() &&
@@ -132,12 +151,11 @@ void Game::render()
 
 				if (m_viewMode == ViewMode::Cost)
 				{
-					int stepCost = tile.integrationCost / 10; 
-					costText.setString(std::to_string(stepCost));
+					int simplifiedCost = tile.integrationCost / 10; 
+					costText.setString(std::to_string(simplifiedCost));
 				}
 				else if (m_viewMode == ViewMode::Integration)
 				{
-					
 					costText.setString(std::to_string(tile.integrationCost));
 				}
 
@@ -172,7 +190,7 @@ void Game::render()
 		"  - Cost Field\n"
 		"  - Integration Field\n"
 		"  - Heat map\n"
-		"  - Vector Feild"
+		"  - Vector Field"
 	);
 	m_window.draw(controlsText);
 
@@ -184,16 +202,19 @@ void Game::render()
 	m_window.display();
 }
 
-void Game::setupTexts() {
 
+// SETUP FUNCTIONS
+
+void Game::setupTexts() 
+{
 	if (!m_font.openFromFile("assets/fonts/Jersey20-Regular.ttf"))
 	{
 		std::cerr << "Error loading font\n";
 	}
 }
+
 void Game::setupSprites() {}
 void Game::setupAudio() {}
-
 
 void Game::setupGrid()
 {
@@ -205,29 +226,39 @@ void Game::setupGrid()
 		{
 			Tile& tile = m_grid[y][x];
 			tile.shape.setSize(sf::Vector2f(TILE_SIZE - 1, TILE_SIZE - 1));
-			tile.shape.setPosition({ static_cast<float>(x * TILE_SIZE), static_cast<float>(y * TILE_SIZE) });
-			tile.shape.setFillColor(sf::Color(0, 0, 100));
+			tile.shape.setPosition({ 
+				static_cast<float>(x * TILE_SIZE), 
+				static_cast<float>(y * TILE_SIZE) 
+			});
+			tile.shape.setFillColor(sf::Color(0, 0, 100)); 
 		}
 	}
 }
 
 
+// MOUSE INPUT - Set goal, agents, walls
 void Game::handleMouseInput(const sf::Event::MouseButtonPressed& event)
 {
+	
 	int x = event.position.x / TILE_SIZE;
 	int y = event.position.y / TILE_SIZE;
+	
+
 	if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
 		return;
+	
 	if (event.button == sf::Mouse::Button::Left)
 	{
 		if (m_goalPos.x != -1)
 			m_grid[m_goalPos.y][m_goalPos.x].type = TileType::Empty;
+		
 		m_goalPos = { x, y };
 		m_grid[y][x].type = TileType::Goal;
 	}
 	else if (event.button == sf::Mouse::Button::Right)
 	{
 		const int MAX_AGENTS = 5;
+		
 		bool agentRemoved = false;
 		for (int i = 0; i < m_agents.size(); ++i)
 		{
@@ -240,19 +271,20 @@ void Game::handleMouseInput(const sf::Event::MouseButtonPressed& event)
 			}
 		}
 
-		if (!agentRemoved && AgentCount != MAX_AGENTS)
+		
+		if (!agentRemoved && AgentCount < MAX_AGENTS)
 		{
 			Agent newAgent;
 			AgentCount += 1;
 			newAgent.position = { x, y };
 			newAgent.startPosition = { x, y };
+			
 			sf::Color agentColors[] = {
 				sf::Color::Green, sf::Color::Cyan, sf::Color::Magenta,
-				sf::Color::Yellow, sf::Color(255, 165, 0)
+				sf::Color::Black, sf::Color(255, 165, 0) 
 			};
 			newAgent.color = agentColors[m_agents.size() % 5];
 			m_agents.push_back(newAgent);
-			
 		}
 	}
 	else if (event.button == sf::Mouse::Button::Middle)
@@ -263,10 +295,13 @@ void Game::handleMouseInput(const sf::Event::MouseButtonPressed& event)
 			t.type = (t.type == TileType::Empty) ? TileType::Wall : TileType::Empty;
 		}
 	}
-	updateGridColors();
-	calculateFlowField();
+	
+	updateGridColors();    
+	calculateFlowField(); 
 }
 
+
+// UPDATE COLORS - Set tile colors based on mode
 void Game::updateGridColors()
 {
 	for (int y = 0; y < GRID_HEIGHT; ++y)
@@ -295,13 +330,15 @@ void Game::updateGridColors()
 						break;
 					}
 				}
+				
 				if (!agentHere)
 				{
 					if (t.isOnPath)
 					{
 						color = sf::Color(255, 255, 100);
 					}
-					else if (m_viewMode == ViewMode::HeatMap && t.integrationCost < std::numeric_limits<int>::max())
+					else if (m_viewMode == ViewMode::HeatMap && 
+					         t.integrationCost < std::numeric_limits<int>::max())
 					{
 						int heat = std::clamp(255 - t.integrationCost / 4, 0, 255);
 						color = sf::Color(255, heat, 0);
@@ -324,6 +361,8 @@ void Game::updateGridColors()
 }
 
 
+// CALCULATE FLOW FIELD - The main algorithm!
+
 void Game::calculateFlowField()
 {
 	for (auto& row : m_grid)
@@ -334,44 +373,56 @@ void Game::calculateFlowField()
 			t.isOnPath = false;
 		}
 
-	if (m_goalPos.x == -1) return;
+	if (m_goalPos.x == -1) return; 
 
+	//Spreads costs from goal using BFS
 	std::queue<sf::Vector2i> queue;
-	m_grid[m_goalPos.y][m_goalPos.x].integrationCost = 0;
+	m_grid[m_goalPos.y][m_goalPos.x].integrationCost = 0; 
 	queue.push(m_goalPos);
 
+	// 8 directions
 	const sf::Vector2i dirs[] = {
-		{ 0,-1 }, { 0,1 }, { -1,0 }, { 1,0 },
-		{ -1,-1 }, { -1,1 }, { 1,-1 }, { 1,1 }
+		{ 0,-1 }, { 0,1 }, { -1,0 }, { 1,0 },          // Straight
+		{ -1,-1 }, { -1,1 }, { 1,-1 }, { 1,1 }         // Diagonal
 	};
 
-	const int TILE_STRAIGHT_COST = 10;
-	const int TILE_DIAGONAL_COST = static_cast<int>(10.0f * std::sqrt(2.0f));
+	const int STRAIGHT_COST = 10;
+	const int DIAGONAL_COST = 14;     
 
 	while (!queue.empty())
 	{
 		auto pos = queue.front();
 		queue.pop();
+		
 		int currentCost = m_grid[pos.y][pos.x].integrationCost;
+		
 		for (auto d : dirs)
 		{
 			sf::Vector2i next = pos + d;
-			if (next.x < 0 || next.x >= GRID_WIDTH || next.y < 0 || next.y >= GRID_HEIGHT)
+			
+			
+			if (next.x < 0 || next.x >= GRID_WIDTH || 
+			    next.y < 0 || next.y >= GRID_HEIGHT)
 				continue;
+			
 			if (abs(d.x) == 1 && abs(d.y) == 1)
 			{
 				if (m_grid[pos.y][next.x].type == TileType::Wall ||
 					m_grid[next.y][pos.x].type == TileType::Wall)
 					continue;
 			}
+			
 			Tile& neighbor = m_grid[next.y][next.x];
-			if (neighbor.type == TileType::Wall) continue;
-			int stepCost = (abs(d.x) + abs(d.y) == 2) ? TILE_DIAGONAL_COST : TILE_STRAIGHT_COST;
+			if (neighbor.type == TileType::Wall) 
+				continue;
+
+			int stepCost = (abs(d.x) + abs(d.y) == 2) ? DIAGONAL_COST : STRAIGHT_COST;
 			int newCost = currentCost + stepCost;
+			
 			if (newCost < neighbor.integrationCost)
 			{
 				neighbor.integrationCost = newCost;
-				queue.push(next);
+				queue.push(next); 
 			}
 		}
 	}
@@ -381,27 +432,39 @@ void Game::calculateFlowField()
 		for (int x = 0; x < GRID_WIDTH; ++x)
 		{
 			Tile& t = m_grid[y][x];
-			if (t.type == TileType::Wall || sf::Vector2i(x, y) == m_goalPos) continue;
+			
+			if (t.type == TileType::Wall || sf::Vector2i(x, y) == m_goalPos) 
+				continue;
+			
 			float lowestCost = static_cast<float>(t.integrationCost);
 			sf::Vector2f gradient(0.f, 0.f);
+			
 			for (auto d : dirs)
 			{
 				sf::Vector2i n = { x + d.x, y + d.y };
-				if (n.x < 0 || n.x >= GRID_WIDTH || n.y < 0 || n.y >= GRID_HEIGHT)
+				
+				if (n.x < 0 || n.x >= GRID_WIDTH || 
+				    n.y < 0 || n.y >= GRID_HEIGHT)
 					continue;
+				
 				float neighborCost = static_cast<float>(m_grid[n.y][n.x].integrationCost);
+				
+			
 				if (neighborCost < lowestCost)
 				{
 					lowestCost = neighborCost;
 					gradient = sf::Vector2f(static_cast<float>(d.x), static_cast<float>(d.y));
 				}
 			}
+			
 			float length = std::sqrt(gradient.x * gradient.x + gradient.y * gradient.y);
 			if (length > 0.f)
 				gradient /= length;
+			
 			t.flowVector = gradient;
 		}
 	}
+	
 	m_flowVectors.clear();
 	m_flowVectors.setPrimitiveType(sf::PrimitiveType::Lines);
 
@@ -412,16 +475,15 @@ void Game::calculateFlowField()
 			Tile& t = m_grid[y][x];
 			if (t.type == TileType::Wall)
 				continue;
-
-			sf::Vector2f start = t.shape.getPosition() + sf::Vector2f(TILE_SIZE / 2.f, TILE_SIZE / 2.f);
+			sf::Vector2f start = t.shape.getPosition() + 
+			                     sf::Vector2f(TILE_SIZE / 2.f, TILE_SIZE / 2.f);
 			sf::Vector2f dir = t.flowVector * (TILE_SIZE / 2.f);
 
 			sf::Vertex lineStart;
-			sf::Vertex lineEnd;
-
 			lineStart.position = start;
 			lineStart.color = sf::Color::White;
 
+			sf::Vertex lineEnd;
 			lineEnd.position = start + dir;
 			lineEnd.color = sf::Color::Cyan;
 
@@ -429,14 +491,15 @@ void Game::calculateFlowField()
 			m_flowVectors.append(lineEnd);
 		}
 	}
+	
 	updateGridColors();
 }
 
 
-
+// MOVE AGENTS - Follow the flow field
 void Game::moveCharacter(sf::Time t_deltaTime)
 {
-	if (m_goalPos.x == -1)
+	if (m_goalPos.x == -1)  
 		return;
 
 	static sf::Clock moveClock;
@@ -446,7 +509,6 @@ void Game::moveCharacter(sf::Time t_deltaTime)
 		return;
 
 	moveClock.restart();
-
 	for (auto& agent : m_agents)
 	{
 		if (!agent.isMoving || agent.position.x == -1)
@@ -470,10 +532,12 @@ void Game::moveCharacter(sf::Time t_deltaTime)
 			agent.position.y + static_cast<int>(std::round(dir.y))
 		};
 
-		if (next.x < 0 || next.x >= GRID_WIDTH || next.y < 0 || next.y >= GRID_HEIGHT)
+		if (next.x < 0 || next.x >= GRID_WIDTH || 
+		    next.y < 0 || next.y >= GRID_HEIGHT)
 			continue;
 
 		m_grid[agent.position.y][agent.position.x].isOnPath = true;
+		
 		agent.position = next;
 	}
 
