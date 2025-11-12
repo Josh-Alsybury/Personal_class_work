@@ -18,7 +18,8 @@
 /// </summary>
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-
+#include "Piece.h"
+#include "Player.h"
 
 const sf::Color ULTRAMARINE{ 5, 55,242,255 }; // const colour
 
@@ -33,7 +34,6 @@ struct Tile
 
 	bool isOnPath = false;
 };
-
 
 
 class Game
@@ -58,7 +58,24 @@ private:
 	void setupSprites();
 	void setupAudio();
 
+	float tileWidth = static_cast<float>(800) / GRID_WIDTH; // cell bounds
+	float tileHeight = static_cast<float>(600) / GRID_HEIGHT; // cell bpunds
+
 	std::vector<std::vector<Tile>> m_grid;
+	std::array<std::array<Cell, GRID_WIDTH>, GRID_HEIGHT> m_board{}; // whats occupying an actual cell of the grid
+
+	// players
+	Player m_human;   // green
+	Player m_ai;      // red (for later)
+
+	// turn and phase
+	Owner m_turn{ Owner::Human };
+	bool m_inPlacement{ true };
+
+	// helpers
+	bool placeAt(int gridx, int gridy, PieceType piecet, Owner who);
+	void handleHumanClick(int pixelx, int pixely);
+
 	
 	sf::RenderWindow m_window; // main SFML window
 	sf::Font m_jerseyFont;// font used by message

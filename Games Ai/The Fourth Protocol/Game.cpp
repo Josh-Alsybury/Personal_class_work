@@ -79,7 +79,16 @@ void Game::processEvents()
 		{
 			processKeys(newEvent);
 		}
+		if (newEvent->is<sf::Event::MouseButtonPressed>()) {
+			const auto* mb = newEvent->getIf<sf::Event::MouseButtonPressed>();
+			if (mb->button == sf::Mouse::Button::Left) {
+				auto mp = sf::Mouse::getPosition(m_window);
+				handleHumanClick(mp.x, mp.y);
+			}
+		}
 	}
+
+
 }
 
 
@@ -93,6 +102,21 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 	if (sf::Keyboard::Key::Escape == newKeypress->code)
 	{
 		m_DELETEexitGame = true; 
+	}
+	if (sf::Keyboard::Key::Num1 == newKeypress->code)
+	{
+		m_human.selected = PieceType::Donkey;
+		std::cout << "donkey picked" << std::endl;
+	}
+	if (sf::Keyboard::Key::Num2 == newKeypress->code)
+	{
+		m_human.selected = PieceType::Snake;
+		std::cout << "snake picked" << std::endl;
+	}
+	if (sf::Keyboard::Key::Num3 == newKeypress->code)
+	{
+		m_human.selected = PieceType::Frog;
+		std::cout << "frog picked" << std::endl;
 	}
 }
 
@@ -138,6 +162,35 @@ void Game::render()
 		}
 	}
 
+	for (int y = 0; y < GRID_HEIGHT; ++y) {
+		for (int x = 0; x < GRID_WIDTH; ++x) {
+			const Cell& c = m_board[y][x];
+			if (c.type == PieceType::None) continue;
+
+			sf::Vector2f pos{ x * tileWidth, y * tileHeight };
+			sf::Color col = (c.owner == Owner::Human) ? sf::Color::Green : sf::Color::Red;
+
+			if (c.type == PieceType::Donkey) {
+				sf::CircleShape circ(std::min(tileWidth, tileHeight) * 0.35f);
+				circ.setFillColor(col);
+				circ.setPosition(pos + sf::Vector2f(tileWidth * 0.15f, tileHeight * 0.15f));
+				m_window.draw(circ);
+			}
+			else if (c.type == PieceType::Snake) {
+				sf::RectangleShape rect({ tileWidth * 0.7f, tileHeight * 0.7f });
+				rect.setFillColor(col);
+				rect.setPosition(pos + sf::Vector2f(tileWidth * 0.15f, tileHeight * 0.15f));
+				m_window.draw(rect);
+			}
+			else if (c.type == PieceType::Frog) {
+				sf::CircleShape tri(std::min(tileWidth, tileHeight) * 0.4f, 3);
+				tri.setFillColor(col);
+				tri.setPosition(pos + sf::Vector2f(tileWidth * 0.1f, tileHeight * 0.1f));
+				m_window.draw(tri);
+			}
+		}
+	}
+
 	m_window.display();
 }
 
@@ -146,8 +199,7 @@ void Game::setupGrid()
 	int windowWidth = m_window.getSize().x;
 	int windowHeight = m_window.getSize().y;
 
-	float tileWidth = static_cast<float>(windowWidth) / GRID_WIDTH;
-	float tileHeight = static_cast<float>(windowHeight) / GRID_HEIGHT;
+
 
 	m_grid.resize(GRID_HEIGHT, std::vector<Tile>(GRID_WIDTH));
 
@@ -187,4 +239,48 @@ void Game::setupSprites()
 void Game::setupAudio()
 {
 
+}
+
+bool Game::placeAt(int gridx, int gridy, PieceType piecet, Owner who)
+{
+	// Check cell is within the bounds of the  board
+	if (gridx < 0 || gridy < 0 || gridx >= GRID_WIDTH || gridy >= GRID_HEIGHT) return false;
+	// Check if cell is already occupied
+	if (m_board[gridy][gridx].type != PieceType::None) return false;
+	m_board[gridy][gridx] = { piecet, who };// Save piece and owner board state
+
+	std::cout << "Placed " << static_cast<int>(piecet)
+		<< " by " << static_cast<int>(who)
+		<< " at (" << gridx << ", " << gridy << ")" << std::endl;
+
+	return true;
+}
+
+void Game::handleHumanClick(int pixelx, int pixely)
+{
+	if (!m_inPlacement || m_turn != Owner::Human) return;
+
+	int gridx = static_cast<int>(pixelx / tileWidth);
+	int gridy = static_cast<int>(pixely / tileHeight);
+
+	// Determine pointer to stock for the currently selected piece
+	int* stock = nullptr; ///////////////////////stock is total amount of pieces///////////////////////////
+
+	if (m_human.selected == PieceType::Donkey) stock = &m_human.donkeys;
+	else if (m_human.selected == PieceType::Snake) stock = &m_human.snake;
+	else if (m_human.selected == PieceType::Frog)  stock = &m_human.frog;
+
+	// No stock? refuse placement
+	if (!stock || *stock <= 0) {
+		std::cout << "No pieces of this type left. Select another." << std::endl;
+		return;
+	}
+
+	// Try to place; only decrement stock on success
+	if (placeAt(gridx, gridy, m_human.selected, Owner::Human)) {
+		--(*stock);
+	}
+	else {
+		std::cout << "Cell occupied. Pick another cell." << std::endl;
+	}
 }

@@ -400,7 +400,6 @@ void Game::calculateFlowField()
 		{
 			sf::Vector2i next = pos + d;
 			
-			
 			if (next.x < 0 || next.x >= GRID_WIDTH || 
 			    next.y < 0 || next.y >= GRID_HEIGHT)
 				continue;
@@ -476,7 +475,7 @@ void Game::calculateFlowField()
 			if (t.type == TileType::Wall)
 				continue;
 			sf::Vector2f start = t.shape.getPosition() + 
-			                     sf::Vector2f(TILE_SIZE / 2.f, TILE_SIZE / 2.f);
+			sf::Vector2f(TILE_SIZE / 2.f, TILE_SIZE / 2.f);
 			sf::Vector2f dir = t.flowVector * (TILE_SIZE / 2.f);
 
 			sf::Vertex lineStart;
