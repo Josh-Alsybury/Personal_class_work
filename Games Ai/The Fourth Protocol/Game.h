@@ -66,7 +66,7 @@ private:
 
 	// players
 	Player m_human;   // green
-	Player m_ai;      // red (for later)
+	Player m_ai;      // red 
 
 	// turn and phase
 	Owner m_turn{ Owner::Human };
@@ -75,6 +75,9 @@ private:
 	// helpers
 	bool placeAt(int gridx, int gridy, PieceType piecet, Owner who);
 	void handleHumanClick(int pixelx, int pixely);
+
+	//npc turn
+	void handleNpcTurn();
 
 	
 	sf::RenderWindow m_window; // main SFML window

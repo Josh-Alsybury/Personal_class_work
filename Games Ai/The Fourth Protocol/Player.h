@@ -11,7 +11,7 @@ struct Player
     // which piece the player is trying to place
     PieceType selected = PieceType::Donkey;
 
-    // try to consume one unit of 'selected'
+    //consume one unit of 'selected'
     bool take()
     {
         if (selected == PieceType::Donkey && donkeys > 0) { --donkeys; return true; }

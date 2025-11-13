@@ -2,11 +2,10 @@
 /// author Pete Lowe May 2025
 /// you need to change the above line or lose marks
 /// </summary>
-
-
 #include "Game.h"
 #include <iostream>
-
+#include <cstdlib>
+#include <ctime>
 
 /// <summary>
 /// default constructor
@@ -139,6 +138,8 @@ void Game::update(sf::Time t_deltaTime)
 {
 	checkKeyboardState();
 
+	// Handle NPC turn automatically
+	handleNpcTurn();
 
 	if (m_DELETEexitGame)
 	{
@@ -279,8 +280,51 @@ void Game::handleHumanClick(int pixelx, int pixely)
 	// Try to place; only decrement stock on success
 	if (placeAt(gridx, gridy, m_human.selected, Owner::Human)) {
 		--(*stock);
+		m_turn = Owner::NPC; // swaps to npc
 	}
 	else {
 		std::cout << "Cell occupied. Pick another cell." << std::endl;
 	}
+}
+
+void Game::handleNpcTurn()
+{
+	if (!m_inPlacement || m_turn != Owner::NPC) return;
+	if (m_ai.empty()) return;
+
+	// Seed random once
+	static bool seeded = false;
+	if (!seeded) {
+		srand(static_cast<unsigned>(time(0)));
+		seeded = true;
+	}
+
+	// Try up to 100 times to find an empty spot
+	for (int attempt = 0; attempt < 100; ++attempt)
+	{
+		int gridx = rand() % GRID_WIDTH;
+		int gridy = rand() % GRID_HEIGHT;
+
+		// Check if cell is empty
+		if (m_board[gridy][gridx].type == PieceType::None)
+		{
+			// Try to place the Ai's selected piece
+			if (placeAt(gridx, gridy, m_ai.selected, Owner::NPC))
+			{
+				m_ai.take(); // Consume one piece from AI's stock
+
+				// Switch to next piece type if current is depleted
+				if (m_ai.selected == PieceType::Donkey && m_ai.donkeys == 0)
+					m_ai.selected = PieceType::Snake;
+				else if (m_ai.selected == PieceType::Snake && m_ai.snake == 0)
+					m_ai.selected = PieceType::Frog;
+
+				// After AI places, switch turn back to human
+				m_turn = Owner::Human;
+				return;
+			}
+		}
+	}
+
+	std::cout << "AI couldn't find empty cell after 100 attempts" << std::endl;
 }
