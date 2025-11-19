@@ -64,6 +64,12 @@ private:
 	std::vector<std::vector<Tile>> m_grid;
 	std::array<std::array<Cell, GRID_WIDTH>, GRID_HEIGHT> m_board{}; // whats occupying an actual cell of the grid
 
+	int evaluateBoard(Owner player);
+	int countInRow(int x, int y, int dx, int dy, Owner player);
+	struct Move {int x, y;int score;};
+
+	void checkTurn();
+
 	// players
 	Player m_human;   // green
 	Player m_ai;      // red 
@@ -78,6 +84,7 @@ private:
 
 	//npc turn
 	void handleNpcTurn();
+
 
 	
 	sf::RenderWindow m_window; // main SFML window

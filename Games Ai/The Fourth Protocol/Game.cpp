@@ -22,7 +22,6 @@ Game::Game() :
 	setupGrid();
 	setupTexts(); // load font 
 	setupSprites(); // load texture
-	setupAudio(); // load sounds
 }
 
 /// <summary>
@@ -139,7 +138,7 @@ void Game::update(sf::Time t_deltaTime)
 	checkKeyboardState();
 
 	// Handle NPC turn automatically
-	handleNpcTurn();
+	checkTurn();
 
 	if (m_DELETEexitGame)
 	{
@@ -200,8 +199,6 @@ void Game::setupGrid()
 	int windowWidth = m_window.getSize().x;
 	int windowHeight = m_window.getSize().y;
 
-
-
 	m_grid.resize(GRID_HEIGHT, std::vector<Tile>(GRID_WIDTH));
 
 	for (int y = 0; y < GRID_HEIGHT; ++y)
@@ -234,13 +231,18 @@ void Game::setupSprites()
 
 }
 
-/// <summary>
-/// load sound file and assign buffers
-/// </summary>
-void Game::setupAudio()
+void Game::checkTurn()
 {
-
+	if (m_turn == Owner::Human)
+	{
+		//nothing needs to happen here as its just players input
+	}
+	else if (m_turn == Owner::NPC)
+	{
+		handleNpcTurn();
+	}
 }
+
 
 bool Game::placeAt(int gridx, int gridy, PieceType piecet, Owner who)
 {
@@ -291,40 +293,132 @@ void Game::handleNpcTurn()
 {
 	if (!m_inPlacement || m_turn != Owner::NPC) return;
 	if (m_ai.empty()) return;
+	Move bestMove = { -1, -1, -99999 };
 
-	// Seed random once
-	static bool seeded = false;
-	if (!seeded) {
-		srand(static_cast<unsigned>(time(0)));
-		seeded = true;
-	}
-
-	// Try up to 100 times to find an empty spot
-	for (int attempt = 0; attempt < 100; ++attempt)
+	// Try all empty cells
+	for (int y = 0; y < GRID_HEIGHT; ++y)
 	{
-		int gridx = rand() % GRID_WIDTH;
-		int gridy = rand() % GRID_HEIGHT;
-
-		// Check if cell is empty
-		if (m_board[gridy][gridx].type == PieceType::None)
+		for (int x = 0; x < GRID_WIDTH; ++x)
 		{
-			// Try to place the Ai's selected piece
-			if (placeAt(gridx, gridy, m_ai.selected, Owner::NPC))
+			// Check if cell is empty
+			if (m_board[y][x].type == PieceType::None)
 			{
-				m_ai.take(); // Consume one piece from AI's stock
+				// Simulate placing AI's piece
+				m_board[y][x] = { m_ai.selected, Owner::NPC };
 
-				// Switch to next piece type if current is depleted
-				if (m_ai.selected == PieceType::Donkey && m_ai.donkeys == 0)
-					m_ai.selected = PieceType::Snake;
-				else if (m_ai.selected == PieceType::Snake && m_ai.snake == 0)
-					m_ai.selected = PieceType::Frog;
+				// Evalate this move
+				int aiScore = evaluateBoard(Owner::NPC);
+				int humanScore = evaluateBoard(Owner::Human);
 
-				// After AI places, switch turn back to human
-				m_turn = Owner::Human;
-				return;
+				// Minimax maximize AI score, minimize human score
+				int moveScore = aiScore - humanScore;
+
+				// Undo the simulated move
+				m_board[y][x] = { PieceType::None, Owner::None };
+
+				// Keep track of best move
+				if (moveScore > bestMove.score)
+				{
+					bestMove.x = x;
+					bestMove.y = y;
+					bestMove.score = moveScore;
+				}
 			}
 		}
 	}
+	// If  found a valid move, place it
+	if (bestMove.x != -1 && bestMove.y != -1)
+	{
+		if (placeAt(bestMove.x, bestMove.y, m_ai.selected, Owner::NPC))
+		{
+			m_ai.take(); // Consume one piece from AI's stock
 
+			std::cout << "AI placed at (" << bestMove.x << ", " << bestMove.y
+				<< ") with score: " << bestMove.score << std::endl;
+
+			// Switch to next piece type if current is depleted
+			if (m_ai.selected == PieceType::Donkey && m_ai.donkeys == 0)
+				m_ai.selected = PieceType::Snake;
+			else if (m_ai.selected == PieceType::Snake && m_ai.snake == 0)
+				m_ai.selected = PieceType::Frog;
+
+			// After AI places, switch turn back to human
+			m_turn = Owner::Human;
+			return;
+		}
+	}
 	std::cout << "AI couldn't find empty cell after 100 attempts" << std::endl;
+}
+
+int Game::evaluateBoard(Owner player)
+{
+	int score = 0;
+	// Check all occupied positions
+	for (int y = 0; y < GRID_HEIGHT; ++y)
+	{
+		for (int x = 0; x < GRID_WIDTH; ++x)
+		{
+			if (m_board[y][x].owner == player && m_board[y][x].type != PieceType::None)
+			{
+				// Check all 4 directions: horizontal, vertical, diagonal down-right, diagonal down-left
+				int horizontal = countInRow(x, y, 1, 0, player);
+				int vertical = countInRow(x, y, 0, 1, player);
+				int diagonalRight = countInRow(x, y, 1, 1, player);
+				int diagonalLeft = countInRow(x, y, -1, 1, player);
+
+				// Take the maximum count in any direction from this position
+				int maxInRow = std::max({ horizontal, vertical, diagonalRight, diagonalLeft });
+
+				// Score increases exponentially with more in a row
+				// 2 in a row: 10 points, 3 in a row: 100 points, 4 in a row: 1000 points, 5+ in a row: 10000 points
+				if (maxInRow >= 5) score += 10000;
+				else if (maxInRow == 4) score += 1000;
+				else if (maxInRow == 3) score += 100;
+				else if (maxInRow == 2) score += 10;
+				else score += 1;
+			}
+		}
+	}
+	return score;
+}
+
+int Game::countInRow(int x, int y, int dx, int dy, Owner player)
+{
+	int count = 0;
+	int nx = x;
+	int ny = y;
+
+	// Count in the positive direction
+	while (nx >= 0 && ny >= 0 && nx < GRID_WIDTH && ny < GRID_HEIGHT)
+	{
+		if (m_board[ny][nx].owner == player && m_board[ny][nx].type != PieceType::None)
+		{
+			count++;
+			nx += dx;
+			ny += dy;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	nx = x - dx;
+	ny = y - dy;
+	// count negative direction
+	while (nx >= 0 && ny >= 0 && nx < GRID_WIDTH && ny < GRID_HEIGHT)
+	{
+		if (m_board[ny][nx].owner == player && m_board[ny][nx].type != PieceType::None)
+		{
+			count++;
+			nx -= dx;
+			ny -= dy;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return count;
 }
