@@ -53,6 +53,8 @@ private:
 	void render();
 
 	void setupGrid();
+
+	bool placementFinished() const;
 	
 	void setupTexts();
 	void setupSprites();
@@ -70,6 +72,13 @@ private:
 
 	void checkTurn();
 
+	void handleHumanMove(int gx, int gy);
+	bool isValidMove(int sx, int sy, int gx, int gy, PieceType t);
+
+	bool isDonkeyMove(int dx, int dy);
+	bool isSnakeMove(int dx, int dy);
+	bool isFrogMove(int sx, int sy, int gx, int gy, int dx, int dy);
+
 	// players
 	Player m_human;   // green
 	Player m_ai;      // red 
@@ -85,7 +94,7 @@ private:
 	//npc turn
 	void handleNpcTurn();
 
-
+	sf::Vector2i m_selectedPiece{ -1,-1 };
 	
 	sf::RenderWindow m_window; // main SFML window
 	sf::Font m_jerseyFont;// font used by message

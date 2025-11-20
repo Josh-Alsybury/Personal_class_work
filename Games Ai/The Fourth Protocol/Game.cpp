@@ -235,7 +235,7 @@ void Game::checkTurn()
 {
 	if (m_turn == Owner::Human)
 	{
-		//nothing needs to happen here as its just players input
+		//nothing needs to happen here as its just player input
 	}
 	else if (m_turn == Owner::NPC)
 	{
@@ -295,28 +295,54 @@ void Game::handleNpcTurn()
 	if (m_ai.empty()) return;
 	Move bestMove = { -1, -1, -99999 };
 
-	// Try all empty cells
+	// Check if human can win next turn at any position
 	for (int y = 0; y < GRID_HEIGHT; ++y)
 	{
 		for (int x = 0; x < GRID_WIDTH; ++x)
 		{
-			// Check if cell is empty
 			if (m_board[y][x].type == PieceType::None)
 			{
-				// Simulate placing AI's piece
+				// Sim player placing at this spot
+				m_board[y][x] = { m_human.selected, Owner::Human };
+				int humanScore = evaluateBoard(Owner::Human);
+				m_board[y][x] = { PieceType::None, Owner::None };
+
+				// If human would win  must block
+				if (humanScore >= 10000) {
+					bestMove.x = x;
+					bestMove.y = y;
+					bestMove.score = 1000000;
+					std::cout << "Blocking human win at (" << x << ", " << y << ")" << std::endl;
+					goto place_move; // Exit loop place 
+				}
+			}
+		}
+	}
+
+	// Normal evaluation find best ofensive move
+	for (int y = 0; y < GRID_HEIGHT; ++y)
+	{
+		for (int x = 0; x < GRID_WIDTH; ++x)
+		{
+			if (m_board[y][x].type == PieceType::None)
+			{
+				// Simulate AI placing
 				m_board[y][x] = { m_ai.selected, Owner::NPC };
 
-				// Evalate this move
 				int aiScore = evaluateBoard(Owner::NPC);
 				int humanScore = evaluateBoard(Owner::Human);
 
-				// Minimax maximize AI score, minimize human score
-				int moveScore = aiScore - humanScore;
+				int moveScore;
 
-				// Undo the simulated move
+				if (aiScore >= 10000) {
+					moveScore = 900000; // AI wins
+				}
+				else {
+					moveScore = aiScore - humanScore;
+				}
+
 				m_board[y][x] = { PieceType::None, Owner::None };
 
-				// Keep track of best move
 				if (moveScore > bestMove.score)
 				{
 					bestMove.x = x;
@@ -326,28 +352,27 @@ void Game::handleNpcTurn()
 			}
 		}
 	}
-	// If  found a valid move, place it
+
+place_move:// Place the best move found
 	if (bestMove.x != -1 && bestMove.y != -1)
 	{
 		if (placeAt(bestMove.x, bestMove.y, m_ai.selected, Owner::NPC))
 		{
-			m_ai.take(); // Consume one piece from AI's stock
+			m_ai.take();
 
 			std::cout << "AI placed at (" << bestMove.x << ", " << bestMove.y
 				<< ") with score: " << bestMove.score << std::endl;
 
-			// Switch to next piece type if current is depleted
 			if (m_ai.selected == PieceType::Donkey && m_ai.donkeys == 0)
 				m_ai.selected = PieceType::Snake;
 			else if (m_ai.selected == PieceType::Snake && m_ai.snake == 0)
 				m_ai.selected = PieceType::Frog;
 
-			// After AI places, switch turn back to human
 			m_turn = Owner::Human;
 			return;
 		}
 	}
-	std::cout << "AI couldn't find empty cell after 100 attempts" << std::endl;
+	std::cout << "AI couldn't find valid move" << std::endl;
 }
 
 int Game::evaluateBoard(Owner player)
@@ -370,7 +395,7 @@ int Game::evaluateBoard(Owner player)
 				int maxInRow = std::max({ horizontal, vertical, diagonalRight, diagonalLeft });
 
 				// Score increases exponentially with more in a row
-				// 2 in a row: 10 points, 3 in a row: 100 points, 4 in a row: 1000 points, 5+ in a row: 10000 points
+				// 2 in a row 10 points, 3 in a row 100 points, 4 in a row 1000 points, 5+ in a row 10000 points
 				if (maxInRow >= 5) score += 10000;
 				else if (maxInRow == 4) score += 1000;
 				else if (maxInRow == 3) score += 100;
@@ -384,9 +409,9 @@ int Game::evaluateBoard(Owner player)
 
 int Game::countInRow(int x, int y, int dx, int dy, Owner player)
 {
-	int count = 0;
-	int nx = x;
-	int ny = y;
+	int count = 1; // Count the startng piece ONCE ( error with double counting first square previsouly)
+	int nx = x + dx; // Start checking from next position
+	int ny = y + dy;
 
 	// Count in the positive direction
 	while (nx >= 0 && ny >= 0 && nx < GRID_WIDTH && ny < GRID_HEIGHT)
@@ -403,8 +428,9 @@ int Game::countInRow(int x, int y, int dx, int dy, Owner player)
 		}
 	}
 
-	nx = x - dx;
+	nx = x - dx;// Start checking from PREVIOUS position
 	ny = y - dy;
+
 	// count negative direction
 	while (nx >= 0 && ny >= 0 && nx < GRID_WIDTH && ny < GRID_HEIGHT)
 	{
