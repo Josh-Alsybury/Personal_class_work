@@ -1,40 +1,12 @@
-/// <summary>
-/// author Pete Lowe May 2025
-/// you need to change the above line or lose marks
-/// Also don't have any member properties called Delete...
-/// </summary>
-#ifndef GAME_HPP
-#define GAME_HPP
-#pragma warning( push )
-#pragma warning( disable : 4275 )
-// ignore this warning
-// C:\SFML - 3.0.0\include\SFML\System\Exception.hpp(41, 47) : 
-// warning C4275 : non dll - interface class 'std::runtime_error' used as base for dll - interface class 'sf::Exception'
-
-/// <summary>
-/// include guards used so we don't process this file twice
-/// same as #pragma once
-/// Don't forget the #endif at the bottom
-/// </summary>
+#pragma once
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include "Piece.h"
-#include "Player.h"
+#include <vector>
+#include "HumanPlayer.h"
+#include "AIPlayer.h"
+#include "Board.h"
+#include "Constants.h"
 
-const sf::Color ULTRAMARINE{ 5, 55,242,255 }; // const colour
-
-const int GRID_WIDTH= 5;
-const int GRID_HEIGHT = 5;
-const int TILE_SIZE = 100;
-
-struct Tile
-{
-	sf::RectangleShape shape;
-	sf::Vector2f flowVector{ 0.f, 0.f };
-
-	bool isOnPath = false;
-};
-
+enum class GamePhase { Placement, Movement };
 
 class Game
 {
@@ -43,65 +15,37 @@ public:
 	~Game();
 	void run();
 
-
 private:
-
+	// Core game loop methods
 	void processEvents();
 	void processKeys(const std::optional<sf::Event> t_event);
 	void checkKeyboardState();
 	void update(sf::Time t_deltaTime);
 	void render();
 
+	// Setup methods
 	void setupGrid();
 
-	bool placementFinished() const;
-	
-	void setupTexts();
-	void setupSprites();
-	void setupAudio();
-
-	float tileWidth = static_cast<float>(800) / GRID_WIDTH; // cell bounds
-	float tileHeight = static_cast<float>(600) / GRID_HEIGHT; // cell bpunds
-
-	std::vector<std::vector<Tile>> m_grid;
-	std::array<std::array<Cell, GRID_WIDTH>, GRID_HEIGHT> m_board{}; // whats occupying an actual cell of the grid
-
-	int evaluateBoard(Owner player);
-	int countInRow(int x, int y, int dx, int dy, Owner player);
-	struct Move {int x, y;int score;};
-
+	// Game logic methods
 	void checkTurn();
-
-	void handleHumanMove(int gx, int gy);
-	bool isValidMove(int sx, int sy, int gx, int gy, PieceType t);
-
-	bool isDonkeyMove(int dx, int dy);
-	bool isSnakeMove(int dx, int dy);
-	bool isFrogMove(int sx, int sy, int gx, int gy, int dx, int dy);
-
-	// players
-	Player m_human;   // green
-	Player m_ai;      // red 
-
-	// turn and phase
-	Owner m_turn{ Owner::Human };
-	bool m_inPlacement{ true };
-
-	// helpers
-	bool placeAt(int gridx, int gridy, PieceType piecet, Owner who);
-	void handleHumanClick(int pixelx, int pixely);
-
-	//npc turn
+	void handleNpcMovement();
 	void handleNpcTurn();
 
-	sf::Vector2i m_selectedPiece{ -1,-1 };
-	
-	sf::RenderWindow m_window; // main SFML window
-	sf::Font m_jerseyFont;// font used by message
-	bool m_DELETEexitGame; // control exiting game
+	// Rendering helper
+	void renderPiece(int x, int y, const Cell& cell);
 
+	// Window and rendering
+	sf::RenderWindow m_window;
+	std::vector<std::vector<Tile>> m_grid;
+	sf::Color highlightColor = sf::Color(200, 200, 50, 180); // yellow
+	void highlightTile(int x, int y, sf::Color color);
+
+	// Game state
+	Board m_board;
+	HumanPlayer m_human;
+	AIPlayer m_ai;
+	Owner m_turn = Owner::Human;
+	bool m_inPlacement = true;
+	bool m_DELETEexitGame;
+	GamePhase m_phase = GamePhase::Placement;
 };
-
-#pragma warning( pop ) 
-#endif // !GAME_HPP
-
