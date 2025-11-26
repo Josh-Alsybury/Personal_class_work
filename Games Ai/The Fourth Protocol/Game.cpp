@@ -11,7 +11,8 @@
 
 Game::Game() :
 	m_window{ sf::VideoMode{ sf::Vector2u{800U, 600U}, 32U }, "SFML Game 3.0" },
-	m_DELETEexitGame{ false }
+	m_DELETEexitGame{ false },
+	m_mainMenu(800.f, 600.f)
 {
 	setupGrid();
 }
@@ -58,6 +59,31 @@ void Game::processEvents()
 		if (newEvent->is<sf::Event::Closed>())
 		{
 			m_DELETEexitGame = true;
+		}
+
+		if (m_showMenu)
+		{
+			// Menu mouse click
+			if (newEvent->is<sf::Event::MouseButtonPressed>())
+			{
+				const auto* mb = newEvent->getIf<sf::Event::MouseButtonPressed>();
+				if (mb->button == sf::Mouse::Button::Left)
+				{
+					sf::Vector2f mousePos = m_window.mapPixelToCoords(mb->position);
+					int choice = m_mainMenu.handleClick(mousePos);  // 0=Easy,1=Medium,2=Hard,3=Exit
+					if (choice == 3) // Exit
+						m_DELETEexitGame = true;
+					else if (choice >= 0 && choice <= 2)
+					{
+						m_difficulty = choice;       // store difficulty
+						m_aiDepth = choice + 1;      // Easy=1, Medium=2, Hard=3
+						m_showMenu = false;          // hide menu and start game
+						std::cout << "Difficulty selected: " << m_difficulty
+							<< " | AI Depth: " << m_aiDepth << std::endl;
+					}
+				}
+			}
+			continue;  // skip the rest of the event handling while menu is active
 		}
 
 		if (newEvent->is<sf::Event::KeyPressed>())
@@ -142,33 +168,41 @@ void Game::render()
 {
 	m_window.clear(ULTRAMARINE);
 
-	// Draw grid tiles
-	for (int y = 0; y < GRID_HEIGHT; ++y)
-	{
-		for (int x = 0; x < GRID_WIDTH; ++x)
-		{
-			m_window.draw(m_grid[y][x].shape);
-		}
-	}
 
-	// Draw pieces
-	for (int y = 0; y < GRID_HEIGHT; ++y)
+	if (m_showMenu)
 	{
-		for (int x = 0; x < GRID_WIDTH; ++x)
+		m_mainMenu.draw(m_window);
+	}
+	else
+	{
+
+		// Draw grid tiles
+		for (int y = 0; y < GRID_HEIGHT; ++y)
 		{
-			const Cell& cell = m_board[y][x];
-			if (cell.type != PieceType::None)
+			for (int x = 0; x < GRID_WIDTH; ++x)
 			{
-				renderPiece(x, y, cell);
+				m_window.draw(m_grid[y][x].shape);
 			}
 		}
-	}
 
-	for (auto& p : m_human.validMoves)
-	{
-		highlightTile(p.first, p.second, highlightColor);
-	}
+		// Draw pieces
+		for (int y = 0; y < GRID_HEIGHT; ++y)
+		{
+			for (int x = 0; x < GRID_WIDTH; ++x)
+			{
+				const Cell& cell = m_board[y][x];
+				if (cell.type != PieceType::None)
+				{
+					renderPiece(x, y, cell);
+				}
+			}
+		}
 
+		for (auto& p : m_human.validMoves)
+		{
+			highlightTile(p.first, p.second, highlightColor);
+		}
+	}
 	m_window.display();
 }
 
@@ -260,10 +294,9 @@ void Game::checkTurn()
 		}
 		else
 		{
-			Move m = m_ai.findBestMoveMovement(m_board, m_human);
-			m_ai.executeMovement(m, m_board);   // you implement this
+			Move m = m_ai.findBestMoveMovement(m_board, m_human, m_aiDepth); // use selected depth
+			m_ai.executeMovement(m, m_board);
 			m_turn = Owner::Human;
-			return;
 		}
 	}
 }

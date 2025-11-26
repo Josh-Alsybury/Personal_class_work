@@ -25,7 +25,7 @@ public:
 
 	bool AIPlayer::allPiecesPlaced() const;
 
-	Move findBestMoveMovement(Board& board, const Player& human);
+	Move findBestMoveMovement(Board& board, const Player& human, int depth);
 private:
 	// Evaluate the board state for a given player
 	int evaluateBoard(const Board& board, Owner player);

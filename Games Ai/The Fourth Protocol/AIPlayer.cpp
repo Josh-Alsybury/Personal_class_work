@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-// Finds best move for AI: tries to block human first, then chooses offensive move
+// Finds best move for AI tries to block human first, then chooses offensive move
 Move AIPlayer::findBestMove(Board& board, const Player& humanPlayer)
 {
     // Check if AI needs to block human's winning move
@@ -286,7 +286,7 @@ int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& huma
 }
 
 // Finds best movement move for AI by simulating moves and human replies (2 ply)
-Move AIPlayer::findBestMoveMovement(Board& board, const Player& human)
+Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth)
 {
     Move bestMove;
     bestMove.score = -999999;
@@ -302,8 +302,8 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human)
         // Make AI move
         board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
-        // Minimize human response
-        int moveScore = minimax(board, 1, false, human); // depth=1 means next human move only
+        // Use depth from parameter for minimax
+        int moveScore = minimax(board, depth, false, human);
 
         // Undo AI move
         board[move.fromY][move.fromX] = savedFrom;

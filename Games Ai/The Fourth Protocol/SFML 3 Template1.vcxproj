@@ -23,6 +23,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="HumanPlayer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIPlayer.h" />
@@ -30,6 +31,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="HumanPlayer.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Npc.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="Player.h" />

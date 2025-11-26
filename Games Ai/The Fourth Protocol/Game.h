@@ -5,6 +5,7 @@
 #include "AIPlayer.h"
 #include "Board.h"
 #include "Constants.h"
+#include "MainMenu.h"
 
 enum class GamePhase { Placement, Movement };
 
@@ -16,6 +17,11 @@ public:
 	void run();
 
 private:
+	MainMenu m_mainMenu;  // add this
+	bool m_showMenu{ true };  // track whether menu is visible
+	int m_difficulty{ 0 };   // 0 = Easy, 1 = Medium, 2 = Hard	
+	int m_aiDepth = 2;   // actual depth for AI
+
 	// Core game loop methods
 	void processEvents();
 	void processKeys(const std::optional<sf::Event> t_event);
@@ -30,6 +36,7 @@ private:
 	void checkTurn();
 	void handleNpcMovement();
 	void handleNpcTurn();
+
 
 	// Rendering helper
 	void renderPiece(int x, int y, const Cell& cell);
