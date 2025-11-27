@@ -76,7 +76,7 @@ void Game::processEvents()
 					else if (choice >= 0 && choice <= 2)
 					{
 						m_difficulty = choice;       // store difficulty
-						m_aiDepth = choice + 1;      // Easy=1, Medium=2, Hard=3
+						m_aiDepth = choice +1;      // Easy=1, Medium=2, Hard=3
 						m_showMenu = false;          // hide menu and start game
 						std::cout << "Difficulty selected: " << m_difficulty
 							<< " | AI Depth: " << m_aiDepth << std::endl;

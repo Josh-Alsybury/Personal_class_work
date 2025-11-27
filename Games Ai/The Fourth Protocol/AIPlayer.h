@@ -33,6 +33,8 @@ private:
 	// Count consecutive pieces in a row starting from (x,y) in direction (dx,dy)
 	int countInRow(const Board& board, int x, int y, int dx, int dy, Owner player);
 
+	std::vector<std::pair<int, int>> generateValidMovesForPiece(const Board& board, int x, int y, PieceType type);
+
 	std::vector<Move> generateMoves(const Board& board);
 	std::vector<Move> generateHumanMoves(const Board& board, const Player& human);
 
