@@ -47,8 +47,8 @@ Move AIPlayer::findBlockingMove(Board& board, const Player& humanPlayer)
                 // UNDO Remove the simulated piece
                 board[row][col] = { PieceType::None, Owner::None };
 
-                // If human would get 3+ in a row score >= 100, block this cell!
-                if (humanScore >= 100)
+                // If human would get 3+ in a row score >= 1000, block this cell!
+                if (humanScore >= 1000)
                 {
                     blockMove.x = col;
                     blockMove.y = row;
@@ -134,10 +134,8 @@ int AIPlayer::evaluateBoard(const Board& board, Owner player)
                                            diagonalRightCount, diagonalLeftCount });
 
                 // Convert run length to score
-                if (longestRun >= 5)
-                    totalScore += 10000;  // WIN!
-                else if (longestRun == 4)
-                    totalScore += 1000;   // Critical threat
+                if (longestRun == 4)
+                    totalScore += 1000;   // WIN
                 else if (longestRun == 3)
                     totalScore += 100;    // Dangerous
                 else if (longestRun == 2)
@@ -217,7 +215,7 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
 {
     std::vector<std::pair<int, int>> validMoves;
 
-    // Define movement directions
+    // Define movement directions100
     const std::vector<std::pair<int, int>> orthogonalDirections = {
         {1,0}, {-1,0}, {0,1}, {0,-1}  // Right, Left, Down, Up
     };
@@ -532,20 +530,20 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
         board[humanMove.fromY][humanMove.fromX] = savedFromCell;
         board[humanMove.y][humanMove.x] = savedToCell;
 
-        // Show all serious threats (4+ in a row)
-        if (humanScore >= 1000)
+        // Show all serious threats (3+ in a row)
+        if (humanScore >= 100)
         {
-            std::cout << "THREAT DETECTED: Human can move from ("
+            std::cout << "THREAT DETECTED Human can move from ("
                 << humanMove.fromX << "," << humanMove.fromY << ") to ("
                 << humanMove.x << "," << humanMove.y << ") - Score: "
                 << humanScore << "\n";
         }
 
         //: Human would win next turn!
-        if (humanScore >= 10000)
+        if (humanScore >= 1000)
         {
             foundThreat = true;
-            std::cout << "*** CRITICAL THREAT: Human can WIN next turn! ***\n";
+            std::cout << "*** CRITICAL THREAT Human can WIN next turn! ***\n";
 
             // Find best blocking move
             Move blockMove;
@@ -578,7 +576,7 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
                 int blockScore = aiScore - (humanScore * 3);
 
                 // If this actually prevents the win, give huge bonus!
-                if (humanScoreAfterBlock < 10000)
+                if (humanScoreAfterBlock < 1000)
                     blockScore += 50000;
 
                 // UNDO  blocking move
