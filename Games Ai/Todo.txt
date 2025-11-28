@@ -1,0 +1,5 @@
+Make less connect 4 like 
+
+add board evaluation power positions 
+
+change ui
