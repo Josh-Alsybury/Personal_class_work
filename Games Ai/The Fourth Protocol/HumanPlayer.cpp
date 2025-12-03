@@ -175,3 +175,26 @@ std::vector<std::pair<int, int>> HumanPlayer::generateValidMoves(const Board& bo
 
 	return moves;
 }
+
+// ============================================================================
+// resets player on board
+// ============================================================================
+
+void HumanPlayer::reset()
+{
+	// Reset piece counts to starting values
+	donkeys = 3;
+	snake = 3;
+	frog = 3;
+
+	// Reset selected piece to default (Donkey)
+	selected = PieceType::Donkey;
+
+	// Clear movement phase state
+	hasSelectedBoardPiece = false;
+	celX = -1;
+	celY = -1;
+	validMoves.clear();
+
+	std::cout << "Human player reset - ready for new game!\n";
+}

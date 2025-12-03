@@ -115,6 +115,19 @@ int AIPlayer::evaluateBoard(const Board& board, Owner player)
 {
     int totalScore = 0;
 
+
+    // ============================================
+    // POSITIONAL VALUE MAP for 5x5 board
+    // ============================================
+    // Center is most valuable, edges less so, corners have strategic value
+    const int positionValue[5][5] = {
+        { 3,  2,  4,  2,  3},   // Row 0 (top)
+        { 2,  6,  8,  6,  2},   // Row 1
+        { 4,  8, 10,  8,  4},   // Row 2 (middle) - CENTER is king!
+        { 2,  6,  8,  6,  2},   // Row 3
+        { 3,  2,  4,  2,  3}    // Row 4 (bottom)
+    };
+
     // Scan entire board looking for player's pieces
     for (int row = 0; row < GRID_HEIGHT; ++row)
     {
@@ -123,6 +136,8 @@ int AIPlayer::evaluateBoard(const Board& board, Owner player)
             // Check if this cell has a piece owned by the player we're evaluating
             if (board[row][col].owner == player && board[row][col].type != PieceType::None)
             {
+                totalScore += positionValue[row][col];
+
                 // Count consecutive pieces in all 4 directions from this piece
                 int horizontalCount = countInRow(board, col, row, 1, 0, player);
                 int verticalCount = countInRow(board, col, row, 0, 1, player);
@@ -283,20 +298,20 @@ std::vector<Move> AIPlayer::generateHumanMoves(const Board& board, const Player&
 // ===========================
 
 // Recursively looks ahead to find best move, assuming both players play optimal
-int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& human)
+int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& human, int alpha, int beta)
 {
-    //  Reached search depth limit
+    // Reached search depth limit
     if (depth == 0)
     {
         // Stop recursion and evaluate current position
         int aiScore = evaluateBoard(board, Owner::NPC);
         int humanScore = evaluateBoard(board, Owner::Human);
-
-        // Return difference: positive = good 4 AI, negative = good  4 Human
+        // Return difference: positive = good for AI, negative = good for Human
         return aiScore - humanScore;
     }
+
     // ==========================
-    // AI's Turn Maximize score wants highest value
+    // AI's Turn: Maximize score (wants highest value)
     // ==========================
     if (isAITurn)
     {
@@ -309,28 +324,34 @@ int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& huma
         for (auto& move : possibleMoves)
         {
             // SAVE the current board state so we can undo later
-            Cell savedFromCell = board[move.fromY][move.fromX];  // Save source cell
-            Cell savedToCell = board[move.y][move.x];            // Save destination cell
+            Cell savedFromCell = board[move.fromY][move.fromX];
+            Cell savedToCell = board[move.y][move.x];
 
             // MAKE the move
             board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
             // RECURSE: Evaluate this position (it's now Human's turn)
-            int evaluation = minimax(board, depth - 1, false, human);
+            int evaluation = minimax(board, depth - 1, false, human, alpha, beta);
 
             // UNDO the move (restore board state)
             board[move.fromY][move.fromX] = savedFromCell;
             board[move.y][move.x] = savedToCell;
 
             // Track the best score found
-            if (evaluation > maxEvaluation)
-                maxEvaluation = evaluation;
+            maxEvaluation = std::max(maxEvaluation, evaluation);
+
+            // Alpha-beta pruning
+            alpha = std::max(alpha, maxEvaluation);
+            if (beta <= alpha)
+            {
+                break; // Beta cutoff - prune remaining branches
+            }
         }
 
         return maxEvaluation; // Return best score AI can achieve
     }
     // ==========================================
-    // Human's Turn Minimize score wants lowest value for AI
+    // Human's Turn: Minimize score (wants lowest value for AI)
     // ==========================================
     else
     {
@@ -346,24 +367,31 @@ int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& huma
             Cell savedFromCell = board[move.fromY][move.fromX];
             Cell savedToCell = board[move.y][move.x];
 
-            // MAKE humans move
+            // MAKE human's move
             board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
-            // RECURSE Evaluate this position switches back to AIs turn
-            int evaluation = minimax(board, depth - 1, true, human);
+            // RECURSE: Evaluate this position (switches back to AI's turn)
+            int evaluation = minimax(board, depth - 1, true, human, alpha, beta);
 
             // UNDO the move
             board[move.fromY][move.fromX] = savedFromCell;
             board[move.y][move.x] = savedToCell;
 
-            // Track the worst score for AI 
-            if (evaluation < minEvaluation)
-                minEvaluation = evaluation;
+            // Track the worst score for AI
+            minEvaluation = std::min(minEvaluation, evaluation);
+
+            // Alpha-beta pruning
+            beta = std::min(beta, minEvaluation);
+            if (beta <= alpha)
+            {
+                break; // Alpha cutoff - prune remaining branches
+            }
         }
 
         return minEvaluation; // Return worst score for AI
     }
 }
+
 // ======================
 // MOVEMENT PHASE MAIN DECISION FUNCTION
 // =====================
@@ -515,7 +543,7 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
         board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
         // EVALUATE using minimax (looks ahead multiple turns)
-        int moveScore = minimax(board, depth, false, human);
+        int moveScore = minimax(board, depth, false, human, -999999, 999999);
 
         // UNDO the move
         board[move.fromY][move.fromX] = savedFromCell;
@@ -647,4 +675,17 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
     }
 
     return validMoves;
+}
+
+void AIPlayer::reset()
+{
+    // Reset piece counts to starting values
+    donkeys = 3;
+    snake = 3;
+    frog = 3;
+
+    // Reset selected piece to default (Donkey)
+    selected = PieceType::Donkey;
+
+    std::cout << "AI player reset - ready for new game!\n";
 }

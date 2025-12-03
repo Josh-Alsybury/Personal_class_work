@@ -26,6 +26,7 @@ private:
 	void processEvents();
 	void processKeys(const std::optional<sf::Event> t_event);
 	void checkKeyboardState();
+	void resetGame();
 	void update(sf::Time t_deltaTime);
 	void render();
 
@@ -34,9 +35,15 @@ private:
 
 	// Game logic methods
 	void checkTurn();
-	void handleNpcMovement();
 	void handleNpcTurn();
 
+	bool gameOver;
+	Owner winner;
+	sf::Font gameFont;
+
+	// Helper functions
+	bool checkWinCondition(Owner player);
+	void displayWinScreen(sf::RenderWindow& window);
 
 	// Rendering helper
 	void renderPiece(int x, int y, const Cell& cell);
@@ -48,6 +55,7 @@ private:
 	void highlightTile(int x, int y, sf::Color color);
 
 	// Game state
+	bool winnerAnnounced;
 	Board m_board;
 	HumanPlayer m_human;
 	AIPlayer m_ai;

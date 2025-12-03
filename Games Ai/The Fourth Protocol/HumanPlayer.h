@@ -7,7 +7,7 @@ class HumanPlayer : public Player
 {
 public:
 	HumanPlayer() = default;
-
+	void reset();
 	// Handle mouse click at pixel coordinates
 	bool handleClick(int pixelX, int pixelY, Board& board);
 	// checks pieces all Placed

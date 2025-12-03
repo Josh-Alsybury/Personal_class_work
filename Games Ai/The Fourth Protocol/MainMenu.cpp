@@ -15,7 +15,7 @@ MainMenu::MainMenu(float width, float height)
 
     for (int i = 0; i < 4; ++i)
     {
-        options.emplace_back(m_font);        // now references member font
+        options.emplace_back(m_font);       
         options[i].setString(names[i]);
         options[i].setCharacterSize(40);
         options[i].setFillColor(sf::Color::White);

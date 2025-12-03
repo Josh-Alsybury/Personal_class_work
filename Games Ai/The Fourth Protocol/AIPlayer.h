@@ -26,19 +26,24 @@ public:
 	bool AIPlayer::allPiecesPlaced() const;
 
 	Move findBestMoveMovement(Board& board, const Player& human, int depth);
-private:
-	// Evaluate the board state for a given player
-	int evaluateBoard(const Board& board, Owner player);
 
 	// Count consecutive pieces in a row starting from (x,y) in direction (dx,dy)
 	int countInRow(const Board& board, int x, int y, int dx, int dy, Owner player);
 
+	void reset();
+	
+private:
+	// Evaluate the board state for a given player
+	int evaluateBoard(const Board& board, Owner player);
+
 	std::vector<std::pair<int, int>> generateValidMovesForPiece(const Board& board, int x, int y, PieceType type);
+
+
 
 	std::vector<Move> generateMoves(const Board& board);
 	std::vector<Move> generateHumanMoves(const Board& board, const Player& human);
 
-	int minimax(Board& board, int depth, bool isAITurn, const Player& human);
+	int minimax(Board& board, int depth, bool isAITurn, const Player& human, int alpha = -999999, int beta = 999999);
 
 	// Check if blocking is needed and return blocking move
 	Move findBlockingMove(Board& board, const Player& humanPlayer);

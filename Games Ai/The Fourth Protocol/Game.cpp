@@ -14,6 +14,15 @@ Game::Game() :
 	m_DELETEexitGame{ false },
 	m_mainMenu(800.f, 600.f)
 {
+	gameOver = false;
+	winner = Owner::None;
+	winnerAnnounced = false;
+
+	if (!gameFont.openFromFile("ASSETS/FONTS/Jersey20-Regular.ttf"))
+	{
+		std::cerr << "Error loading font!\n";
+	}
+
 	setupGrid();
 }
 
@@ -78,9 +87,19 @@ void Game::processEvents()
 						m_difficulty = choice;       // store difficulty
 						m_aiDepth = choice +1;      // Easy=1, Medium=2, Hard=3
 						m_showMenu = false;          // hide menu and start game
+						resetGame();
 						std::cout << "Difficulty selected: " << m_difficulty
 							<< " | AI Depth: " << m_aiDepth << std::endl;
 					}
+				}
+			}
+			if (gameOver && newEvent->is<sf::Event::KeyPressed>())
+			{
+				const sf::Event::KeyPressed* keypress = newEvent->getIf<sf::Event::KeyPressed>();
+				if (sf::Keyboard::Key::Escape == keypress->code)
+				{
+					m_showMenu = true;  // Return to menu
+					continue;
 				}
 			}
 			continue;  // skip the rest of the event handling while menu is active
@@ -125,7 +144,14 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 
 	if (sf::Keyboard::Key::Escape == keypress->code)
 	{
-		m_DELETEexitGame = true;
+		if (gameOver)
+		{
+			m_showMenu = true;  //  Return to menu on win screen
+		}
+		else
+		{
+			m_DELETEexitGame = true;  // Exit during normal gameplay
+		}
 	}
 	else if (sf::Keyboard::Key::Num1 == keypress->code)
 	{
@@ -143,7 +169,7 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 
 void Game::checkKeyboardState()
 {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
+	if (!gameOver && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
 	{
 		m_DELETEexitGame = true;
 	}
@@ -157,6 +183,11 @@ void Game::update(sf::Time t_deltaTime)
 {
 	checkKeyboardState();
 	checkTurn();
+
+	if (!gameOver)  
+	{
+		checkTurn();
+	}
 
 	if (m_DELETEexitGame)
 	{
@@ -202,9 +233,112 @@ void Game::render()
 		{
 			highlightTile(p.first, p.second, highlightColor);
 		}
+		        // Draw win screen on top if game is over
+        if (gameOver)
+        {
+            displayWinScreen(m_window);
+        }
+    
 	}
 	m_window.display();
 }
+
+// ============================================================================
+// CheckWinCondition - 
+// ============================================================================
+
+bool Game::checkWinCondition(Owner player)
+{
+	// Scan the entire board
+	for (int row = 0; row < GRID_HEIGHT; ++row)
+	{
+		for (int col = 0; col < GRID_WIDTH; ++col)
+		{
+			// If this cell belongs to the player
+			if (m_board[row][col].owner == player && m_board[row][col].type != PieceType::None)
+			{
+				// Check all 4 directions for 4-in-a-row
+				int horizontal = m_ai.countInRow(m_board, col, row, 1, 0, player);
+				int vertical = m_ai.countInRow(m_board, col, row, 0, 1, player);
+				int diagonalRight = m_ai.countInRow(m_board, col, row, 1, 1, player);
+				int diagonalLeft = m_ai.countInRow(m_board, col, row, -1, 1, player);
+
+				// If any direction has 4+ pieces, player wins!
+				if (horizontal >= 4 || vertical >= 4 ||
+					diagonalRight >= 4 || diagonalLeft >= 4)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+// ============================================================================
+// displayWinScreen - 
+// ============================================================================
+
+void Game::displayWinScreen(sf::RenderWindow & window)
+{
+	// Semi-transparent dark overlay
+	sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
+	overlay.setFillColor(sf::Color(0, 0, 0, 180));
+	window.draw(overlay);
+
+	// Winner text - using gameFont member variable
+	sf::Text winnerText(gameFont);  // SFML 3.0 constructor
+	winnerText.setCharacterSize(60);
+	winnerText.setFillColor(sf::Color::White);
+
+	if (winner == Owner::Human)
+		winnerText.setString("YOU WIN!");
+	else if (winner == Owner::NPC)
+		winnerText.setString("AI WINS!");
+
+	// Center the text
+	sf::FloatRect textBounds = winnerText.getGlobalBounds();
+	winnerText.setPosition(sf::Vector2f(window.getSize().x / 2.f - textBounds.size.x / 2.f,window.getSize().y / 2.f - 80.f));
+
+	window.draw(winnerText);
+
+	// Instruction text
+	sf::Text instructionText(gameFont);  // SFML 3.0 constructor
+	instructionText.setCharacterSize(30);
+	instructionText.setFillColor(sf::Color(200, 200, 200));
+	instructionText.setString("Press ESC to return to menu");
+
+	sf::FloatRect instrBounds = instructionText.getGlobalBounds();
+	instructionText.setPosition(sf::Vector2f(window.getSize().x / 2.f - instrBounds.size.x / 2.f,window.getSize().y / 2.f + 20.f));
+
+	window.draw(instructionText);
+}
+
+
+// ============================================================================
+// Resets game for rematch
+// ============================================================================
+
+void Game::resetGame()
+{
+	// Clear the board
+	m_board.clear();
+
+	// Reset players
+	m_human = HumanPlayer(); 
+	m_ai = AIPlayer();
+
+	// Reset game state
+	gameOver = false;
+	winner = Owner::None;
+	winnerAnnounced = false;
+	m_inPlacement = true;
+	m_phase = GamePhase::Placement;
+	m_turn = Owner::Human;
+
+	std::cout << "Game reset - starting new match!\n";
+}
+
 
 void Game::renderPiece(int x, int y, const Cell& cell)
 {
@@ -272,6 +406,30 @@ void Game::setupGrid()
 
 void Game::checkTurn()
 {
+	// Check for wins FIRST before doing anything else
+	if (checkWinCondition(Owner::Human))
+	{
+		gameOver = true;
+		winner = Owner::Human;
+		if (!winnerAnnounced)  // ADD THIS CHECK
+		{
+			std::cout << "Human wins!\n";
+			winnerAnnounced = true;
+		}
+		return;
+	}
+
+	if (checkWinCondition(Owner::NPC))
+	{
+		gameOver = true;
+		winner = Owner::NPC;
+		if (!winnerAnnounced)  // ADD THIS CHECK
+		{
+			std::cout << "AI wins!\n";
+			winnerAnnounced = true;
+		}
+		return;
+	}
 
 	if (m_inPlacement)
 	{
