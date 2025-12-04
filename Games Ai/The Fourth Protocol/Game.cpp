@@ -490,7 +490,7 @@ void Game::setupGrid()
 			Tile& tile = m_grid[y][x];
 			tile.shape.setSize({ tileWidth - 1.0f, tileHeight - 1.0f });
 			tile.shape.setPosition(sf::Vector2f{ x * tileWidth, y * tileHeight });
-			tile.shape.setFillColor(sf::Color(0, 0, 100));
+			tile.shape.setFillColor(sf::Color(255, 155, 155));
 		}
 	}
 }
