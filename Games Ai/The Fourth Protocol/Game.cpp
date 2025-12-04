@@ -1,14 +1,26 @@
-/// <summary>
-/// author: [Your Name Here] May 2025
-/// Refactored game implementation
-/// </summary>
+/**
+ * @file Game.cpp
+ * @author [Your Name Here]
+ * @date May 2025
+ * @brief Main game implementation with refactored structure
+ *
+ * This file contains the core game loop, event handling, rendering, and game state management
+ * for a strategy board game featuring human vs AI gameplay with difficulty settings.
+ */
+
 #include "Game.h"
 #include <iostream>
 
-// ============================================================================
-// CONSTRUCTOR & DESTRUCTOR
-// ============================================================================
+ // ============================================================================
+ // CONSTRUCTOR & DESTRUCTOR
+ // ============================================================================
 
+ /**
+  * @brief Constructs the Game object and initializes all subsystems
+  *
+  * Sets up the game window, loads fonts, initializes the main menu,
+  * and prepares the game grid for play.
+  */
 Game::Game() :
 	m_window{ sf::VideoMode{ sf::Vector2u{800U, 600U}, 32U }, "SFML Game 3.0" },
 	m_DELETEexitGame{ false },
@@ -26,6 +38,9 @@ Game::Game() :
 	setupGrid();
 }
 
+/**
+ * @brief Destructor for Game class
+ */
 Game::~Game()
 {
 }
@@ -34,6 +49,12 @@ Game::~Game()
 // MAIN GAME LOOP
 // ============================================================================
 
+/**
+ * @brief Main game loop implementing fixed timestep updates
+ *
+ * Runs at 60 FPS with consistent update timing. Handles events,
+ * updates game state, and renders each frame until the window closes.
+ */
 void Game::run()
 {
 	sf::Clock clock;
@@ -61,6 +82,12 @@ void Game::run()
 // EVENT HANDLING
 // ============================================================================
 
+/**
+ * @brief Processes all pending window events
+ *
+ * Handles window close events, menu interactions, keyboard input,
+ * and mouse clicks for both placement and movement phases.
+ */
 void Game::processEvents()
 {
 	while (const std::optional newEvent = m_window.pollEvent())
@@ -85,7 +112,7 @@ void Game::processEvents()
 					else if (choice >= 0 && choice <= 2)
 					{
 						m_difficulty = choice;       // store difficulty
-						m_aiDepth = choice +1;      // Easy=1, Medium=2, Hard=3
+						m_aiDepth = choice + 1;      // Easy=1, Medium=2, Hard=3
 						m_showMenu = false;          // hide menu and start game
 						resetGame();
 						std::cout << "Difficulty selected: " << m_difficulty
@@ -137,7 +164,14 @@ void Game::processEvents()
 	}
 }
 
-
+/**
+ * @brief Handles keyboard key press events
+ *
+ * @param t_event The keyboard event to process
+ *
+ * Processes Escape key for menu/exit functionality and number keys (1-3)
+ * for piece selection during placement phase.
+ */
 void Game::processKeys(const std::optional<sf::Event> t_event)
 {
 	const sf::Event::KeyPressed* keypress = t_event->getIf<sf::Event::KeyPressed>();
@@ -146,7 +180,7 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 	{
 		if (gameOver)
 		{
-			m_showMenu = true;  //  Return to menu on win screen
+			m_showMenu = true;  // Return to menu on win screen
 		}
 		else
 		{
@@ -167,6 +201,11 @@ void Game::processKeys(const std::optional<sf::Event> t_event)
 	}
 }
 
+/**
+ * @brief Checks continuous keyboard state for held keys
+ *
+ * Currently monitors Escape key for exit during gameplay.
+ */
 void Game::checkKeyboardState()
 {
 	if (!gameOver && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
@@ -179,12 +218,19 @@ void Game::checkKeyboardState()
 // UPDATE & RENDER
 // ============================================================================
 
+/**
+ * @brief Updates game state each frame
+ *
+ * @param t_deltaTime Time elapsed since last update
+ *
+ * Checks keyboard state, manages turn logic, and handles window closing.
+ */
 void Game::update(sf::Time t_deltaTime)
 {
 	checkKeyboardState();
 	checkTurn();
 
-	if (!gameOver)  
+	if (!gameOver)
 	{
 		checkTurn();
 	}
@@ -195,10 +241,15 @@ void Game::update(sf::Time t_deltaTime)
 	}
 }
 
+/**
+ * @brief Renders all game elements to the window
+ *
+ * Draws the game grid, pieces, valid move highlights, and overlays
+ * the win screen when game is over. Displays menu when active.
+ */
 void Game::render()
 {
 	m_window.clear(ULTRAMARINE);
-
 
 	if (m_showMenu)
 	{
@@ -206,7 +257,6 @@ void Game::render()
 	}
 	else
 	{
-
 		// Draw grid tiles
 		for (int y = 0; y < GRID_HEIGHT; ++y)
 		{
@@ -233,20 +283,30 @@ void Game::render()
 		{
 			highlightTile(p.first, p.second, highlightColor);
 		}
-		        // Draw win screen on top if game is over
-        if (gameOver)
-        {
-            displayWinScreen(m_window);
-        }
-    
+
+		// Draw win screen on top if game is over
+		if (gameOver)
+		{
+			displayWinScreen(m_window);
+		}
 	}
 	m_window.display();
 }
 
 // ============================================================================
-// CheckWinCondition - 
+// CheckWinCondition
 // ============================================================================
 
+/**
+ * @brief Checks if the specified player has won the game
+ *
+ * @param player The player to check for win condition
+ * @return true if player has 4 or more pieces in a row
+ * @return false otherwise
+ *
+ * Scans entire board checking horizontal, vertical, and diagonal lines
+ * for 4-in-a-row victories.
+ */
 bool Game::checkWinCondition(Owner player)
 {
 	// Scan the entire board
@@ -276,10 +336,18 @@ bool Game::checkWinCondition(Owner player)
 }
 
 // ============================================================================
-// displayWinScreen - 
+// displayWinScreen
 // ============================================================================
 
-void Game::displayWinScreen(sf::RenderWindow & window)
+/**
+ * @brief Displays the victory screen overlay
+ *
+ * @param window Reference to the render window
+ *
+ * Shows semi-transparent overlay with winner announcement and
+ * instructions to return to menu.
+ */
+void Game::displayWinScreen(sf::RenderWindow& window)
 {
 	// Semi-transparent dark overlay
 	sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
@@ -298,7 +366,7 @@ void Game::displayWinScreen(sf::RenderWindow & window)
 
 	// Center the text
 	sf::FloatRect textBounds = winnerText.getGlobalBounds();
-	winnerText.setPosition(sf::Vector2f(window.getSize().x / 2.f - textBounds.size.x / 2.f,window.getSize().y / 2.f - 80.f));
+	winnerText.setPosition(sf::Vector2f(window.getSize().x / 2.f - textBounds.size.x / 2.f, window.getSize().y / 2.f - 80.f));
 
 	window.draw(winnerText);
 
@@ -309,23 +377,28 @@ void Game::displayWinScreen(sf::RenderWindow & window)
 	instructionText.setString("Press ESC to return to menu");
 
 	sf::FloatRect instrBounds = instructionText.getGlobalBounds();
-	instructionText.setPosition(sf::Vector2f(window.getSize().x / 2.f - instrBounds.size.x / 2.f,window.getSize().y / 2.f + 20.f));
+	instructionText.setPosition(sf::Vector2f(window.getSize().x / 2.f - instrBounds.size.x / 2.f, window.getSize().y / 2.f + 20.f));
 
 	window.draw(instructionText);
 }
-
 
 // ============================================================================
 // Resets game for rematch
 // ============================================================================
 
+/**
+ * @brief Resets the game to initial state for a new match
+ *
+ * Clears the board, reinitializes both players, and resets all
+ * game state flags to starting values.
+ */
 void Game::resetGame()
 {
 	// Clear the board
 	m_board.clear();
 
 	// Reset players
-	m_human = HumanPlayer(); 
+	m_human = HumanPlayer();
 	m_ai = AIPlayer();
 
 	// Reset game state
@@ -339,7 +412,16 @@ void Game::resetGame()
 	std::cout << "Game reset - starting new match!\n";
 }
 
-
+/**
+ * @brief Renders a game piece at the specified grid position
+ *
+ * @param x Grid x-coordinate
+ * @param y Grid y-coordinate
+ * @param cell Cell data containing piece type and owner
+ *
+ * Draws different shapes for different piece types: circles for Donkeys,
+ * rectangles for Snakes, and triangles for Frogs. Color indicates ownership.
+ */
 void Game::renderPiece(int x, int y, const Cell& cell)
 {
 	sf::Vector2f pos{ x * tileWidth, y * tileHeight };
@@ -368,6 +450,15 @@ void Game::renderPiece(int x, int y, const Cell& cell)
 	}
 }
 
+/**
+ * @brief Highlights a grid tile with the specified color
+ *
+ * @param x Grid x-coordinate
+ * @param y Grid y-coordinate
+ * @param color Color to use for highlighting
+ *
+ * Used to show valid move destinations during movement phase.
+ */
 void Game::highlightTile(int x, int y, sf::Color color)
 {
 	sf::RectangleShape rect;
@@ -378,11 +469,16 @@ void Game::highlightTile(int x, int y, sf::Color color)
 	m_window.draw(rect);
 }
 
-
 // ============================================================================
 // SETUP METHODS
 // ============================================================================
 
+/**
+ * @brief Initializes the game grid with tiles
+ *
+ * Creates a 2D grid of visual tiles for rendering the game board.
+ * Each tile is positioned and colored appropriately.
+ */
 void Game::setupGrid()
 {
 	m_grid.resize(GRID_HEIGHT, std::vector<Tile>(GRID_WIDTH));
@@ -399,11 +495,18 @@ void Game::setupGrid()
 	}
 }
 
-
 // ============================================================================
 // GAME LOGIC - TURN MANAGEMENT
 // ============================================================================
 
+/**
+ * @brief Manages turn logic and phase transitions
+ *
+ * Checks for win conditions first, then handles turn execution based
+ * on current game phase (placement vs movement) and whose turn it is.
+ * Automatically transitions from placement to movement phase when all
+ * pieces are placed.
+ */
 void Game::checkTurn()
 {
 	// Check for wins FIRST before doing anything else
@@ -411,7 +514,7 @@ void Game::checkTurn()
 	{
 		gameOver = true;
 		winner = Owner::Human;
-		if (!winnerAnnounced)  // ADD THIS CHECK
+		if (!winnerAnnounced)
 		{
 			std::cout << "Human wins!\n";
 			winnerAnnounced = true;
@@ -423,7 +526,7 @@ void Game::checkTurn()
 	{
 		gameOver = true;
 		winner = Owner::NPC;
-		if (!winnerAnnounced)  // ADD THIS CHECK
+		if (!winnerAnnounced)
 		{
 			std::cout << "AI wins!\n";
 			winnerAnnounced = true;
@@ -437,7 +540,7 @@ void Game::checkTurn()
 		{
 			m_phase = GamePhase::Movement;    // change phase here
 			m_inPlacement = false;
-			std::cout<<" phase changed" << std::endl;
+			std::cout << " phase changed" << std::endl;
 			return;
 		}
 
@@ -446,9 +549,9 @@ void Game::checkTurn()
 	}
 	else
 	{
-		if (m_phase == GamePhase::Movement&& m_turn == Owner::Human)
+		if (m_phase == GamePhase::Movement && m_turn == Owner::Human)
 		{
-	
+			// Human's movement turn - handled by mouse clicks
 		}
 		else
 		{
@@ -459,6 +562,13 @@ void Game::checkTurn()
 	}
 }
 
+/**
+ * @brief Handles AI turn during placement phase
+ *
+ * AI evaluates the board, finds the best placement move, executes it,
+ * and automatically selects the next available piece type if current
+ * type is depleted.
+ */
 void Game::handleNpcTurn()
 {
 	if (m_ai.empty()) return;
@@ -489,4 +599,3 @@ void Game::handleNpcTurn()
 		std::cout << "AI couldn't find valid move" << std::endl;
 	}
 }
-

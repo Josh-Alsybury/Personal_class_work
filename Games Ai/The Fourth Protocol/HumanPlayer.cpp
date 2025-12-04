@@ -1,7 +1,27 @@
+/**
+ * @file HumanPlayer.cpp
+ * @brief Human player input handling and movement logic
+ *
+ * Manages human player interactions including piece placement, movement selection,
+ * and valid move generation for different piece types.
+ */
+
 #include "HumanPlayer.h"
 #include "Constants.h"
 #include <iostream>
 
+ /**
+  * @brief Handles mouse click during placement phase
+  *
+  * @param pixelX Mouse X coordinate in pixels
+  * @param pixelY Mouse Y coordinate in pixels
+  * @param board Reference to game board
+  * @return true if piece was successfully placed
+  * @return false if placement failed (no pieces left, cell occupied, etc.)
+  *
+  * Converts pixel coordinates to grid coordinates and attempts to place
+  * the currently selected piece type at that location.
+  */
 bool HumanPlayer::handleClick(int pixelX, int pixelY, Board& board)
 {
 	// Convert pixel coordinates to grid coordinates
@@ -33,6 +53,13 @@ bool HumanPlayer::handleClick(int pixelX, int pixelY, Board& board)
 	}
 }
 
+/**
+ * @brief Selects a piece type for placement
+ *
+ * @param piece The piece type to select (Donkey, Snake, or Frog)
+ *
+ * Updates the currently selected piece and provides console feedback.
+ */
 void HumanPlayer::selectPiece(PieceType piece)
 {
 	selected = piece;
@@ -53,6 +80,11 @@ void HumanPlayer::selectPiece(PieceType piece)
 	}
 }
 
+/**
+ * @brief Gets pointer to the stock count of currently selected piece
+ *
+ * @return int* Pointer to piece count, or nullptr if invalid selection
+ */
 int* HumanPlayer::getSelectedStock()
 {
 	switch (selected)
@@ -68,11 +100,30 @@ int* HumanPlayer::getSelectedStock()
 	}
 }
 
+/**
+ * @brief Checks if all pieces have been placed
+ *
+ * @return true if all piece counts are zero
+ * @return false otherwise
+ */
 bool HumanPlayer::allPiecesPlaced() const
 {
 	return donkeys == 0 && snake == 0 && frog == 0;
 }
 
+/**
+ * @brief Handles mouse click during movement phase
+ *
+ * @param pixelX Mouse X coordinate in pixels
+ * @param pixelY Mouse Y coordinate in pixels
+ * @param board Reference to game board
+ * @return true if a valid move was completed (switches turn)
+ * @return false if piece was just selected or invalid click
+ *
+ * Two-step process:
+ * 1. First click selects a piece and highlights valid moves
+ * 2. Second click moves to a valid destination or deselects
+ */
 bool HumanPlayer::handleMovementClick(int pixelX, int pixelY, Board& board)
 {
 	int x = pixelX / tileWidth;
@@ -81,7 +132,7 @@ bool HumanPlayer::handleMovementClick(int pixelX, int pixelY, Board& board)
 	// Clicked outside board
 	if (!board.isValid(x, y)) return false;
 
-	//  Click on your own piece  select it
+	// STEP 1: Click on your own piece - select it
 	if (!hasSelectedBoardPiece)
 	{
 		const Cell& c = board.at(y, x);
@@ -98,8 +149,8 @@ bool HumanPlayer::handleMovementClick(int pixelX, int pixelY, Board& board)
 		return false; // not your piece
 	}
 
-	//  If a piece is already selected:
-	//  click a valid destination move
+	// STEP 2: If a piece is already selected:
+	// Check if clicked a valid destination - move there
 	for (auto& mv : validMoves)
 	{
 		if (mv.first == x && mv.second == y)
@@ -111,12 +162,26 @@ bool HumanPlayer::handleMovementClick(int pixelX, int pixelY, Board& board)
 		}
 	}
 
-	// . Clicked somewhere not valid deselect
+	// STEP 3: Clicked somewhere not valid - deselect
 	hasSelectedBoardPiece = false;
 	validMoves.clear();
 	return false;
 }
 
+/**
+ * @brief Generates all valid movement destinations for a piece
+ *
+ * @param board Current game board state
+ * @param x Piece's x-coordinate
+ * @param y Piece's y-coordinate
+ * @param type Type of piece (determines movement rules)
+ * @return std::vector<std::pair<int, int>> List of valid (x,y) destinations
+ *
+ * Movement rules:
+ * - Donkey: Can move 1 space in 4 orthogonal directions (up, down, left, right)
+ * - Snake: Can move 1 space in 8 directions (orthogonal + diagonal)
+ * - Frog: Can move 1 space in 8 directions OR jump over any piece to land 2 spaces away
+ */
 std::vector<std::pair<int, int>> HumanPlayer::generateValidMoves(const Board& board, int x, int y, PieceType type)
 {
 	std::vector<std::pair<int, int>> moves;
@@ -125,6 +190,7 @@ std::vector<std::pair<int, int>> HumanPlayer::generateValidMoves(const Board& bo
 	const std::vector<std::pair<int, int>> dirs4 = { {1,0}, {-1,0}, {0,1}, {0,-1} };
 	const std::vector<std::pair<int, int>> dirs8 = { {1,0}, {-1,0}, {0,1}, {0,-1}, {1,1}, {1,-1}, {-1,1}, {-1,-1} };
 
+	// Helper lambda: Add coordinate if it's valid and empty
 	auto addIfEmpty = [&](int nx, int ny) {
 		if (board.isValid(nx, ny) && board.isEmpty(nx, ny))
 			moves.emplace_back(nx, ny);
@@ -146,17 +212,17 @@ std::vector<std::pair<int, int>> HumanPlayer::generateValidMoves(const Board& bo
 	{
 		// Frog moves 8 directions plus long jumps
 
-		// 1 One step in 8 directions
+		// PART 1: One step in 8 directions
 		for (const auto& d : dirs8)
 			addIfEmpty(x + d.first, y + d.second);
 
-		// 2Long jumps in all 8 directions
+		// PART 2: Long jumps in all 8 directions
 		for (const auto& d : dirs8)
 		{
 			int nx = x + d.first;
 			int ny = y + d.second;
 
-			if (!board.isValid(nx, ny)) continue; // checks jumps valid stops wrapping of jump over cells
+			if (!board.isValid(nx, ny)) continue; // Checks jumps valid, stops wrapping of jump over cells
 
 			// Check if the first tile in direction is occupied (the piece to jump over)
 			if (board.isValid(nx, ny) && !board.isEmpty(nx, ny))
@@ -177,9 +243,15 @@ std::vector<std::pair<int, int>> HumanPlayer::generateValidMoves(const Board& bo
 }
 
 // ============================================================================
-// resets player on board
+// Resets player on board
 // ============================================================================
 
+/**
+ * @brief Resets human player to initial state
+ *
+ * Restores piece counts to starting values, resets piece selection,
+ * and clears any movement phase selection state.
+ */
 void HumanPlayer::reset()
 {
 	// Reset piece counts to starting values

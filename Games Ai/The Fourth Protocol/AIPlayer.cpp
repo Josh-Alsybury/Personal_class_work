@@ -1,13 +1,28 @@
+/**
+ * @file AIPlayer.cpp
+ * @brief AI player implementation with minimax algorithm and strategic evaluation
+ *
+ * Implements intelligent opponent behavior for both placement and movement phases.
+ * Uses minimax with alpha-beta pruning for optimal decision making.
+ */
+
 #include "AIPlayer.h"
 #include <algorithm>
 #include <iostream>
 
-// ============================================================================
-// PLACEMENT PHASE FUNCTIONS
-// ============================================================================
+ // ============================================================================
+ // PLACEMENT PHASE FUNCTIONS
+ // ============================================================================
 
-// Main decision function for placement phase
-// Tries to block human first, then finds best offensive move
+ /**
+  * @brief Main decision function for placement phase
+  *
+  * @param board Current game board state
+  * @param humanPlayer Reference to human player for threat assessment
+  * @return Move The best move found (blocking or offensive)
+  *
+  * Prioritizes blocking human's winning moves, then finds best offensive position.
+  */
 Move AIPlayer::findBestMove(Board& board, const Player& humanPlayer)
 {
     // Check if AI needs to block human's winning move
@@ -24,8 +39,16 @@ Move AIPlayer::findBestMove(Board& board, const Player& humanPlayer)
     return findOffensiveMove(board);
 }
 
-// Checks every empty cell to see if human could win there next turn
-// If yes, returns that cell to block it
+/**
+ * @brief Searches for moves that block human's immediate winning threats
+ *
+ * @param board Current game board state
+ * @param humanPlayer Reference to human player for piece type
+ * @return Move Blocking move if threat found, invalid move (-1,-1) otherwise
+ *
+ * Simulates placing human pieces on empty cells to detect if they would
+ * create 3+ in a row (score >= 1000), indicating need to block.
+ */
 Move AIPlayer::findBlockingMove(Board& board, const Player& humanPlayer)
 {
     Move blockMove; // Default invalid move (x = -1)
@@ -38,13 +61,13 @@ Move AIPlayer::findBlockingMove(Board& board, const Player& humanPlayer)
             // Only check empty cells
             if (board.isEmpty(col, row))
             {
-                // SIM Place human's piece here temporarily
+                // SIM: Place human's piece here temporarily
                 board[row][col] = { humanPlayer.selected, Owner::Human };
 
-                // EVAL Would this give human 3+ in a row?
+                // EVAL: Would this give human 3+ in a row?
                 int humanScore = evaluateBoard(board, Owner::Human);
 
-                // UNDO Remove the simulated piece
+                // UNDO: Remove the simulated piece
                 board[row][col] = { PieceType::None, Owner::None };
 
                 // If human would get 3+ in a row score >= 1000, block this cell!
@@ -53,16 +76,25 @@ Move AIPlayer::findBlockingMove(Board& board, const Player& humanPlayer)
                     blockMove.x = col;
                     blockMove.y = row;
                     blockMove.score = 100000; // High priority
-                    return blockMove; // Return immediately blocking is critical
+                    return blockMove; // Return immediately - blocking is critical
                 }
             }
         }
     }
 
-    return blockMove; // No block needed returns invalid move
+    return blockMove; // No block needed - returns invalid move
 }
 
-// Finds best offensive move by checking empty cells and scoring them
+/**
+ * @brief Finds the best offensive placement move
+ *
+ * @param board Current game board state
+ * @return Move The highest-scoring offensive move
+ *
+ * Evaluates all empty cells by simulating AI piece placement and calculating
+ * score differential (AI advantage - Human advantage). Instant win moves
+ * (5 in a row) receive maximum priority.
+ */
 Move AIPlayer::findOffensiveMove(Board& board)
 {
     Move bestMove;
@@ -76,10 +108,10 @@ Move AIPlayer::findOffensiveMove(Board& board)
             // Only consider empty cells
             if (board.isEmpty(col, row))
             {
-                // SIM Place AI piece here temporarily
+                // SIM: Place AI piece here temporarily
                 board[row][col] = { selected, Owner::NPC };
 
-                // EVAL How good is this position for AI?
+                // EVAL: How good is this position for AI?
                 int aiScore = evaluateBoard(board, Owner::NPC);
                 int humanScore = evaluateBoard(board, Owner::Human);
 
@@ -88,7 +120,7 @@ Move AIPlayer::findOffensiveMove(Board& board)
                 // Otherwise, score = (how good for AI) - (how good for human)
                 int moveScore = (aiScore >= 10000) ? 900000 : (aiScore - humanScore);
 
-                // UNDO Remove the simulated piece
+                // UNDO: Remove the simulated piece
                 board[row][col] = { PieceType::None, Owner::None };
 
                 // Update best move if this is better
@@ -105,16 +137,27 @@ Move AIPlayer::findOffensiveMove(Board& board)
     return bestMove;
 }
 
-// ==============================
-// BOARD EVALUATION FUNCTIOS
-// =========================
+// ============================================================================
+// BOARD EVALUATION FUNCTIONS
+// ============================================================================
 
-// Evaluates board position and returns a score for the player
-// Higher score = better position
+/**
+ * @brief Evaluates board position for a specific player
+ *
+ * @param board Current game board state
+ * @param player Player to evaluate position for
+ * @return int Position score (higher is better for the player)
+ *
+ * Scoring system:
+ * - Positional values: Center tiles worth more than edges
+ * - 4 in a row: +1000 points (winning threat)
+ * - 3 in a row: +100 points (strong position)
+ * - 2 in a row: +10 points (building position)
+ * - Single piece: +1 point plus positional value
+ */
 int AIPlayer::evaluateBoard(const Board& board, Owner player)
 {
     int totalScore = 0;
-
 
     // ============================================
     // POSITIONAL VALUE MAP for 5x5 board
@@ -164,15 +207,28 @@ int AIPlayer::evaluateBoard(const Board& board, Owner player)
     return totalScore;
 }
 
-// Counts consecutive pieces in a line both directions from starting point
+/**
+ * @brief Counts consecutive pieces in a line bidirectionally
+ *
+ * @param board Current game board state
+ * @param x Starting x-coordinate
+ * @param y Starting y-coordinate
+ * @param directionX X-direction increment (1, 0, or -1)
+ * @param directionY Y-direction increment (1, 0, or -1)
+ * @param player Player whose pieces to count
+ * @return int Total consecutive pieces in both directions
+ *
+ * Counts from starting position in both positive and negative direction,
+ * stopping when encountering empty cells or opponent pieces.
+ */
 int AIPlayer::countInRow(const Board& board, int x, int y,
     int directionX, int directionY, Owner player)
 {
-    int count = 1; // Start counting from this piece the starting piece itself
+    int count = 1; // Start counting from this piece - the starting piece itself
 
     // =============================
-    // Count in POSITIVE direction 
-    // ===========================
+    // Count in POSITIVE direction
+    // =============================
     int currentX = x + directionX;
     int currentY = y + directionY;
 
@@ -190,13 +246,13 @@ int AIPlayer::countInRow(const Board& board, int x, int y,
         }
         else
         {
-            break; // Hit empty cell or opponent's piece  stop counting
+            break; // Hit empty cell or opponent's piece - stop counting
         }
     }
 
-    // ===========================
-    // Count in NEGATIVE direction 
-    // ==========================
+    // =============================
+    // Count in NEGATIVE direction
+    // =============================
     currentX = x - directionX;
     currentY = y - directionY;
 
@@ -220,8 +276,19 @@ int AIPlayer::countInRow(const Board& board, int x, int y,
     return count; // Total from both directions
 }
 
+// ============================================================================
+// MOVE GENERATION FUNCTIONS
+// ============================================================================
 
-// Generates all possible moves for AI pieces
+/**
+ * @brief Generates all valid moves for AI pieces
+ *
+ * @param board Current game board state
+ * @return std::vector<Move> List of all possible AI moves
+ *
+ * Scans board for AI pieces and generates valid destinations based
+ * on each piece's movement rules.
+ */
 std::vector<Move> AIPlayer::generateMoves(const Board& board)
 {
     std::vector<Move> allMoves;
@@ -257,7 +324,16 @@ std::vector<Move> AIPlayer::generateMoves(const Board& board)
     return allMoves;
 }
 
-// Generates all possible moves for Human pieces
+/**
+ * @brief Generates all valid moves for Human pieces
+ *
+ * @param board Current game board state
+ * @param human Reference to human player
+ * @return std::vector<Move> List of all possible human moves
+ *
+ * Similar to generateMoves but for human pieces. Used in minimax
+ * to simulate opponent's responses.
+ */
 std::vector<Move> AIPlayer::generateHumanMoves(const Board& board, const Player& human)
 {
     std::vector<Move> allMoves;
@@ -273,7 +349,7 @@ std::vector<Move> AIPlayer::generateHumanMoves(const Board& board, const Player&
                 // Get the type of this piece
                 PieceType pieceType = board[row][col].type;
 
-                // Generate valid moves based on piece type 
+                // Generate valid moves based on piece type
                 auto validDestinations = generateValidMovesForPiece(board, col, row, pieceType);
 
                 // Convert each destination to a Move struct
@@ -293,11 +369,25 @@ std::vector<Move> AIPlayer::generateHumanMoves(const Board& board, const Player&
     return allMoves;
 }
 
-// ========================
+// ============================================================================
 // MINIMAX ALGORITHM
-// ===========================
+// ============================================================================
 
-// Recursively looks ahead to find best move, assuming both players play optimal
+/**
+ * @brief Minimax algorithm with alpha-beta pruning
+ *
+ * @param board Current game board state (modified during search)
+ * @param depth Remaining search depth
+ * @param isAITurn True if maximizing (AI's turn), false if minimizing (Human's turn)
+ * @param human Reference to human player
+ * @param alpha Alpha value for pruning
+ * @param beta Beta value for pruning
+ * @return int Best evaluation score at current depth
+ *
+ * Recursively searches game tree assuming both players play optimally.
+ * AI maximizes score, human minimizes. Alpha-beta pruning eliminates
+ * branches that cannot affect final decision.
+ */
 int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& human, int alpha, int beta)
 {
     // Reached search depth limit
@@ -392,10 +482,23 @@ int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& huma
     }
 }
 
-// ======================
+// ============================================================================
 // MOVEMENT PHASE MAIN DECISION FUNCTION
-// =====================
+// ============================================================================
 
+/**
+ * @brief Finds the best movement during movement phase
+ *
+ * @param board Current game board state
+ * @param human Reference to human player
+ * @param depth Search depth for minimax
+ * @return Move The best move found
+ *
+ * Three-tier decision making:
+ * 1. Check if AI can win immediately (4+ in a row)
+ * 2. Check if human threatens to win next turn and block
+ * 3. Use minimax to find strategically best move
+ */
 Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth)
 {
     Move bestMove;
@@ -409,7 +512,7 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
 
     // ===============================
     // TIER 1: Check if AI can win immediately
-    // ==============================
+    // ===============================
     for (auto& move : aiMoves)
     {
         // SAVE current state
@@ -419,7 +522,7 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
         // TRY this move
         board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
-        // EVAl  Does this win the game?
+        // EVAL: Does this win the game?
         int aiScore = evaluateBoard(board, Owner::NPC);
 
         // UNDO the move
@@ -435,9 +538,10 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
             return move;
         }
     }
-    // =========================
-    // TIER 2 Check if Human can win next turn and block it
-    // ========================
+
+    // ===============================
+    // TIER 2: Check if Human can win next turn and block it
+    // ===============================
     auto humanMoves = generateHumanMoves(board, human);
     std::cout << "Human has " << humanMoves.size() << " possible moves\n";
 
@@ -445,29 +549,35 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
 
     for (auto& humanMove : humanMoves)
     {
-        //  current state
+        // SAVE current state
         Cell savedFromCell = board[humanMove.fromY][humanMove.fromX];
         Cell savedToCell = board[humanMove.y][humanMove.x];
-        // What if Human makes this move 
-        board.movePiece(humanMove.fromX, humanMove.fromY,humanMove.x, humanMove.y);
-        // EVAL Would Human win
+
+        // SIM: What if Human makes this move?
+        board.movePiece(humanMove.fromX, humanMove.fromY, humanMove.x, humanMove.y);
+
+        // EVAL: Would Human win?
         int humanScore = evaluateBoard(board, Owner::Human);
+
         // UNDO simulation
         board[humanMove.fromY][humanMove.fromX] = savedFromCell;
         board[humanMove.y][humanMove.x] = savedToCell;
+
         // Show all serious threats (3+ in a row)
         if (humanScore >= 100)
         {
-            std::cout << "THREAT DETECTED Human can move from ("
+            std::cout << "THREAT DETECTED: Human can move from ("
                 << humanMove.fromX << "," << humanMove.fromY << ") to ("
                 << humanMove.x << "," << humanMove.y << ") - Score: "
                 << humanScore << "\n";
         }
-        //: Human would win next turn!
+
+        // CRITICAL: Human would win next turn!
         if (humanScore >= 1000)
         {
             foundThreat = true;
-            std::cout << "*** CRITICAL THREAT Human can WIN next turn! ***\n";
+            std::cout << "*** CRITICAL THREAT: Human can WIN next turn! ***\n";
+
             // Find best blocking move
             Move blockMove;
             blockMove.score = -999999;
@@ -482,12 +592,12 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
                 // TRY our blocking move
                 board.movePiece(move.fromX, move.fromY, move.x, move.y);
 
-                // TES Can human still win after our block?
-                board.movePiece(humanMove.fromX, humanMove.fromY,humanMove.x, humanMove.y);
+                // TEST: Can human still win after our block?
+                board.movePiece(humanMove.fromX, humanMove.fromY, humanMove.x, humanMove.y);
                 int humanScoreAfterBlock = evaluateBoard(board, Owner::Human);
 
                 // UNDO human's test move
-                board.movePiece(humanMove.x, humanMove.y,humanMove.fromX, humanMove.fromY);
+                board.movePiece(humanMove.x, humanMove.y, humanMove.fromX, humanMove.fromY);
 
                 // EVAL position after blocking
                 int aiScore = evaluateBoard(board, Owner::NPC);
@@ -500,7 +610,7 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
                 if (humanScoreAfterBlock < 1000)
                     blockScore += 50000;
 
-                // UDO  blocking move
+                // UNDO blocking move
                 board[move.fromY][move.fromX] = savedFromCell2;
                 board[move.y][move.x] = savedToCell2;
 
@@ -528,9 +638,9 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
         std::cout << "No immediate winning threats detected.\n";
     }
 
-    // ===============
-    // TIER 3 No immediate threats  use minimax 
-    // ===================
+    // ===============================
+    // TIER 3: No immediate threats - use minimax
+    // ===============================
     std::cout << "Using minimax with depth " << depth << "\n";
 
     for (auto& move : aiMoves)
@@ -557,41 +667,64 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
         }
     }
 
-    std::cout << "Best move selected: (" << bestMove.fromX << ","<< bestMove.fromY << ") to (" << bestMove.x << "," << bestMove.y<< ") - Score: " << bestMove.score << "\n";
+    std::cout << "Best move selected: (" << bestMove.fromX << "," << bestMove.fromY
+        << ") to (" << bestMove.x << "," << bestMove.y
+        << ") - Score: " << bestMove.score << "\n";
     std::cout << "=== END AI TURN ===\n\n";
 
     return bestMove;
 }
 
-
-// =========================
+// ============================================================================
 // UTILITY FUNCTIONS
-// =========================
+// ============================================================================
 
-// Executes the chosen move on the board
+/**
+ * @brief Executes a move on the board
+ *
+ * @param move The move to execute
+ * @param board Board to modify
+ */
 void AIPlayer::executeMovement(const Move& move, Board& board)
 {
     board.movePiece(move.fromX, move.fromY, move.x, move.y);
 }
 
-// Checks if AI has placed all its pieces
+/**
+ * @brief Checks if all AI pieces have been placed
+ *
+ * @return true if all piece counts are zero
+ * @return false otherwise
+ */
 bool AIPlayer::allPiecesPlaced() const
 {
     return donkeys == 0 && snake == 0 && frog == 0;
 }
 
-
 // ============================================================================
 // MOVEMENT GENERATION FUNCTIONS
 // ============================================================================
 
-// Generates all valid moves for a specific piece based on its type
+/**
+ * @brief Generates valid movement destinations for a piece
+ *
+ * @param board Current game board state
+ * @param x Piece's x-coordinate
+ * @param y Piece's y-coordinate
+ * @param type Type of piece (determines movement rules)
+ * @return std::vector<std::pair<int, int>> List of valid (x,y) destinations
+ *
+ * Movement rules:
+ * - Donkey: 4 orthogonal directions (up, down, left, right)
+ * - Snake: 8 directions (orthogonal + diagonal)
+ * - Frog: 8 directions + can jump over pieces to land 2 spaces away
+ */
 std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
     const Board& board, int x, int y, PieceType type)
 {
     std::vector<std::pair<int, int>> validMoves;
 
-    // Define movement directions100
+    // Define movement directions
     const std::vector<std::pair<int, int>> orthogonalDirections = {
         {1,0}, {-1,0}, {0,1}, {0,-1}  // Right, Left, Down, Up
     };
@@ -601,14 +734,14 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
         {1,1}, {1,-1}, {-1,1}, {-1,-1}     // Diagonal
     };
 
-    // Helper function Add destination if it's valid and empty
+    // Helper function: Add destination if it's valid and empty
     auto addIfEmpty = [&](int newX, int newY) {
         if (board.isValid(newX, newY) && board.isEmpty(newX, newY))
             validMoves.emplace_back(newX, newY);
         };
 
-    // ==============================
-    // DONKEY Moves only 4 directions 
+    // =============================
+    // DONKEY: Moves only 4 directions
     // =============================
     if (type == PieceType::Donkey)
     {
@@ -620,9 +753,9 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
         }
     }
 
-    // ======================================
-    // SNAKE Moves in all 8 directions
-    // ===================================
+    // =============================
+    // SNAKE: Moves in all 8 directions
+    // =============================
     else if (type == PieceType::Snake)
     {
         for (const auto& direction : allDirections)
@@ -633,12 +766,12 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
         }
     }
 
-    // ===============================================
-    // FROG Moves in 8 directions + can jump over pieces
-    // ===============================================
+    // =============================
+    // FROG: Moves in 8 directions + can jump over pieces
+    // =============================
     else if (type == PieceType::Frog)
     {
-        // Normal moves One step in all 8 directions
+        // Normal moves: One step in all 8 directions
         for (const auto& direction : allDirections)
         {
             int newX = x + direction.first;
@@ -646,10 +779,10 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
             addIfEmpty(newX, newY);
         }
 
-        // Special moves Jump over pieces (2 spaces away)
+        // Special moves: Jump over pieces (2 spaces away)
         for (const auto& direction : allDirections)
         {
-            // First cell The piece we might jump over
+            // First cell: The piece we might jump over
             int adjacentX = x + direction.first;
             int adjacentY = y + direction.second;
 
@@ -657,7 +790,7 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
             if (!board.isValid(adjacentX, adjacentY))
                 continue;
 
-            // Is there a piece to jump over
+            // Is there a piece to jump over?
             if (board.isValid(adjacentX, adjacentY) &&
                 !board.isEmpty(adjacentX, adjacentY))
             {
@@ -665,7 +798,7 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
                 int jumpX = adjacentX + direction.first;
                 int jumpY = adjacentY + direction.second;
 
-                // Can we land there
+                // Can we land there?
                 if (board.isValid(jumpX, jumpY) && board.isEmpty(jumpX, jumpY))
                 {
                     validMoves.emplace_back(jumpX, jumpY); // Valid jump
@@ -677,6 +810,11 @@ std::vector<std::pair<int, int>> AIPlayer::generateValidMovesForPiece(
     return validMoves;
 }
 
+/**
+ * @brief Resets AI player to initial state
+ *
+ * Restores piece counts to starting values and resets piece selection.
+ */
 void AIPlayer::reset()
 {
     // Reset piece counts to starting values
