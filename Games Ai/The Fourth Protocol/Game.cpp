@@ -22,7 +22,7 @@
   * and prepares the game grid for play.
   */
 Game::Game() :
-	m_window{ sf::VideoMode{ sf::Vector2u{800U, 600U}, 32U }, "SFML Game 3.0" },
+	m_window{ sf::VideoMode{ sf::Vector2u{1000U, 600U}, 32U }, "SFML Game 3.0" }, // Made wider for legend
 	m_DELETEexitGame{ false },
 	m_mainMenu(800.f, 600.f)
 {
@@ -99,21 +99,26 @@ void Game::processEvents()
 
 		if (m_showMenu)
 		{
-			// Menu mouse click
 			if (newEvent->is<sf::Event::MouseButtonPressed>())
 			{
 				const auto* mb = newEvent->getIf<sf::Event::MouseButtonPressed>();
 				if (mb->button == sf::Mouse::Button::Left)
 				{
 					sf::Vector2f mousePos = m_window.mapPixelToCoords(mb->position);
-					int choice = m_mainMenu.handleClick(mousePos);  // 0=Easy,1=Medium,2=Hard,3=Exit
-					if (choice == 3) // Exit
+					int choice = m_mainMenu.handleClick(mousePos);  // 0=Easy,1=Medium,2=Hard,3=Nightmare,4=Exit
+					if (choice == 4) // Exit
 						m_DELETEexitGame = true;
-					else if (choice >= 0 && choice <= 2)
+					else if (choice >= 0 && choice <= 3) // Difficulty options
 					{
-						m_difficulty = choice;       // store difficulty
-						m_aiDepth = choice + 1;      // Easy=1, Medium=2, Hard=3
-						m_showMenu = false;          // hide menu and start game
+						m_difficulty = choice;
+
+						// Set AI depth based on difficulty
+						if (choice == 3) // Nightmare
+							m_aiDepth = 5;
+						else
+							m_aiDepth = choice + 1;  // Easy=1, Medium=2, Hard=3
+
+						m_showMenu = false;
 						resetGame();
 						std::cout << "Difficulty selected: " << m_difficulty
 							<< " | AI Depth: " << m_aiDepth << std::endl;
@@ -284,6 +289,9 @@ void Game::render()
 			highlightTile(p.first, p.second, highlightColor);
 		}
 
+		// Draw legend panel
+		drawLegend();
+
 		// Draw win screen on top if game is over
 		if (gameOver)
 		{
@@ -291,6 +299,143 @@ void Game::render()
 		}
 	}
 	m_window.display();
+}
+
+// ============================================================================
+// LEGEND RENDERING
+// ============================================================================
+
+/**
+ * @brief Draws the legend panel on the right side of the screen
+ *
+ * Displays piece types, counts for both players, and current phase information
+ */
+void Game::drawLegend()
+{
+	float legendX = 800.f;
+	float legendWidth = 200.f;
+
+	// Background panel
+	sf::RectangleShape panel(sf::Vector2f(legendWidth, 600.f));
+	panel.setPosition({ legendX, 0.f });
+	panel.setFillColor(sf::Color(30, 30, 50, 220));
+	m_window.draw(panel);
+
+	// Title
+	sf::Text title(gameFont);
+	title.setString("LEGEND");
+	title.setCharacterSize(24);
+	title.setFillColor(sf::Color::White);
+	title.setPosition({ legendX + 55.f, 10.f });
+	m_window.draw(title);
+
+	// Phase indicator
+	sf::Text phaseText(gameFont);
+	phaseText.setString(m_phase == GamePhase::Placement ? "Phase: SETUP" : "Phase: BATTLE");
+	phaseText.setCharacterSize(16);
+	phaseText.setFillColor(sf::Color::Yellow);
+	phaseText.setPosition({legendX + 20.f, 45.f});
+	m_window.draw(phaseText);
+
+	float yPos = 80.f;
+
+	// Human Player Section
+	Game::drawPlayerSection("YOU (Green)", legendX, yPos, m_human, sf::Color::Green);
+	yPos += 180.f;
+
+	// AI Player Section
+	drawPlayerSection("AI (Red)", legendX, yPos, m_ai, sf::Color::Red);
+	yPos += 180.f;
+
+	// Turn indicator
+	sf::Text turnText(gameFont);
+	turnText.setString(m_turn == Owner::Human ? "YOUR TURN" : "AI THINKING...");
+	turnText.setCharacterSize(18);
+	turnText.setFillColor(m_turn == Owner::Human ? sf::Color::Green : sf::Color::Red);
+	turnText.setPosition({ legendX + 25.f, yPos });
+	m_window.draw(turnText);
+}
+
+/**
+ * @brief Draws a player's piece information section
+ *
+ * @param playerName Name to display for the player
+ * @param x X position for the section
+ * @param y Y position for the section
+ * @param player Player object containing piece counts
+ * @param color Color representing the player
+ */
+void Game::drawPlayerSection(const std::string& playerName, float x, float y,
+	const Player& player, const sf::Color& color)
+{
+	// Player name
+	sf::Text nameText(gameFont);
+	nameText.setString(playerName);
+	nameText.setCharacterSize(18);
+	nameText.setFillColor(color);
+	nameText.setPosition({ x + 20.f, y });
+	m_window.draw(nameText);
+
+	y += 30.f;
+
+	// Donkey
+	drawPieceInfo("Circle (Donkey)", player.donkeys, x + 30.f, y, color, PieceType::Donkey);
+	y += 40.f;
+
+	// Snake
+	drawPieceInfo("Square (Snake)", player.snake, x + 30.f, y, color, PieceType::Snake);
+	y += 40.f;
+
+	// Frog
+	drawPieceInfo("Triangle (Frog)", player.frog, x + 30.f, y, color, PieceType::Frog);
+}
+
+/**
+ * @brief Draws information for a single piece type
+ *
+ * @param name Piece name to display
+ * @param count Number remaining
+ * @param x X position
+ * @param y Y position
+ * @param color Player color
+ * @param type Piece type for rendering the shape
+ */
+void Game::drawPieceInfo(const std::string& name, int count, float x, float y,
+	const sf::Color& color, PieceType type)
+{
+	// Draw small icon of the piece
+	float iconSize = 20.f;
+	sf::Vector2f iconPos(x - 25.f, y + 5.f);
+
+	if (type == PieceType::Donkey)
+	{
+		sf::CircleShape icon(iconSize * 0.4f);
+		icon.setFillColor(color);
+		icon.setPosition(iconPos);
+		m_window.draw(icon);
+	}
+	else if (type == PieceType::Snake)
+	{
+		sf::RectangleShape icon(sf::Vector2f(iconSize * 0.8f, iconSize * 0.8f));
+		icon.setFillColor(color);
+		icon.setPosition(iconPos);
+		m_window.draw(icon);
+	}
+	else if (type == PieceType::Frog)
+	{
+		sf::CircleShape icon(iconSize * 0.5f, 3);
+		icon.setFillColor(color);
+		icon.setPosition(iconPos);
+		m_window.draw(icon);
+	}
+
+	// Text info
+	sf::Text text(gameFont);
+	text.setString(name + ": " + std::to_string(count));
+	text.setCharacterSize(14);
+	text.setFillColor(sf::Color::White);
+	text.setPosition({ x, y });
+	m_window.draw(text);
 }
 
 // ============================================================================

@@ -97,6 +97,23 @@ private:
 	void render();
 
 	/**
+	* @brief Renders kegend for pieces
+	*/
+	void drawLegend();
+
+	/**
+	* @brief drawPlayerSection for pieces
+	*/
+	void drawPlayerSection(const std::string& playerName, float x, float y,
+		const Player& player, const sf::Color& color);
+
+	/**
+	* @brief drawPieceInfo for player
+	*/
+	void drawPieceInfo(const std::string& name, int count, float x, float y,
+		const sf::Color& color, PieceType type);
+
+	/**
 	 * @brief Initializes the game grid
 	 */
 	void setupGrid();

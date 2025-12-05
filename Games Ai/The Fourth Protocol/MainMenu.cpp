@@ -26,10 +26,10 @@ MainMenu::MainMenu(float width, float height)
     }
 
     options.clear();
-    options.reserve(4);
-    std::string names[4] = { "Easy", "Medium", "Hard", "Exit" };
+    options.reserve(5);
+    std::string names[5] = { "Easy", "Medium", "Hard", "Nightmare", "Exit" };
 
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         options.emplace_back(m_font);
         options[i].setString(names[i]);

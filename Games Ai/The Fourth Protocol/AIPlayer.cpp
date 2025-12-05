@@ -390,95 +390,79 @@ std::vector<Move> AIPlayer::generateHumanMoves(const Board& board, const Player&
  */
 int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& human, int alpha, int beta)
 {
-    // Reached search depth limit
     if (depth == 0)
     {
-        // Stop recursion and evaluate current position
         int aiScore = evaluateBoard(board, Owner::NPC);
         int humanScore = evaluateBoard(board, Owner::Human);
-        // Return difference: positive = good for AI, negative = good for Human
         return aiScore - humanScore;
     }
 
-    // ==========================
-    // AI's Turn: Maximize score (wants highest value)
-    // ==========================
     if (isAITurn)
     {
-        int maxEvaluation = -999999; // Start with very low value
-
-        // Generate all possible AI moves
+        int maxEvaluation = -999999;
         auto possibleMoves = generateMoves(board);
 
-        // Try each move and see what happens
+        // OPTIMIZATION: Sort moves by quick evaluation (best first)
+        std::sort(possibleMoves.begin(), possibleMoves.end(),
+            [&](const Move& a, const Move& b) {
+                // Quick heuristic: prefer center moves
+                int scoreA = (2 - abs(a.x - 2)) + (2 - abs(a.y - 2));
+                int scoreB = (2 - abs(b.x - 2)) + (2 - abs(b.y - 2));
+                return scoreA > scoreB;
+            });
+
         for (auto& move : possibleMoves)
         {
-            // SAVE the current board state so we can undo later
             Cell savedFromCell = board[move.fromY][move.fromX];
             Cell savedToCell = board[move.y][move.x];
 
-            // MAKE the move
             board.movePiece(move.fromX, move.fromY, move.x, move.y);
-
-            // RECURSE: Evaluate this position (it's now Human's turn)
             int evaluation = minimax(board, depth - 1, false, human, alpha, beta);
 
-            // UNDO the move (restore board state)
             board[move.fromY][move.fromX] = savedFromCell;
             board[move.y][move.x] = savedToCell;
 
-            // Track the best score found
             maxEvaluation = std::max(maxEvaluation, evaluation);
-
-            // Alpha-beta pruning
             alpha = std::max(alpha, maxEvaluation);
+
             if (beta <= alpha)
-            {
-                break; // Beta cutoff - prune remaining branches
-            }
+                break; // Prune
         }
 
-        return maxEvaluation; // Return best score AI can achieve
+        return maxEvaluation;
     }
-    // ==========================================
-    // Human's Turn: Minimize score (wants lowest value for AI)
-    // ==========================================
     else
     {
-        int minEvaluation = 999999; // Start with very high value
-
-        // Generate all possible Human moves
+        // Same optimization for human's turn
+        int minEvaluation = 999999;
         auto possibleMoves = generateHumanMoves(board, human);
 
-        // Try each human move and see what happens
+        std::sort(possibleMoves.begin(), possibleMoves.end(),
+            [&](const Move& a, const Move& b) {
+                int scoreA = (2 - abs(a.x - 2)) + (2 - abs(a.y - 2));
+                int scoreB = (2 - abs(b.x - 2)) + (2 - abs(b.y - 2));
+                return scoreA > scoreB;
+            });
+
         for (auto& move : possibleMoves)
         {
-            // SAVE the current board state
             Cell savedFromCell = board[move.fromY][move.fromX];
             Cell savedToCell = board[move.y][move.x];
 
-            // MAKE human's move
             board.movePiece(move.fromX, move.fromY, move.x, move.y);
-
-            // RECURSE: Evaluate this position (switches back to AI's turn)
             int evaluation = minimax(board, depth - 1, true, human, alpha, beta);
 
-            // UNDO the move
             board[move.fromY][move.fromX] = savedFromCell;
             board[move.y][move.x] = savedToCell;
 
-            // Track the worst score for AI
             minEvaluation = std::min(minEvaluation, evaluation);
-
-            // Alpha-beta pruning
             beta = std::min(beta, minEvaluation);
+
             if (beta <= alpha)
-            {
-                break; // Alpha cutoff - prune remaining branches
-            }
+                break; // Prune
         }
 
-        return minEvaluation; // Return worst score for AI
+        return minEvaluation;
     }
 }
 
@@ -499,7 +483,7 @@ int AIPlayer::minimax(Board& board, int depth, bool isAITurn, const Player& huma
  * 2. Check if human threatens to win next turn and block
  * 3. Use minimax to find strategically best move
  */
-Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth)
+Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int maxDepth)
 {
     Move bestMove;
     bestMove.score = -999999;
@@ -639,42 +623,76 @@ Move AIPlayer::findBestMoveMovement(Board& board, const Player& human, int depth
     }
 
     // ===============================
-    // TIER 3: No immediate threats - use minimax
+    // TIER 3: No immediate threats - use ITERATIVE DEEPENING minimax
     // ===============================
-    std::cout << "Using minimax with depth " << depth << "\n";
+    std::cout << "Using iterative deepening up to depth " << maxDepth << "\n";
 
-    for (auto& move : aiMoves)
+    // ITERATIVE DEEPENING: Search progressively deeper, using previous results to order moves
+    for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++)
     {
-        // SAVE state
-        Cell savedFromCell = board[move.fromY][move.fromX];
-        Cell savedToCell = board[move.y][move.x];
+        std::cout << "  Searching at depth " << currentDepth << "...\n";
 
-        // TRY this move
-        board.movePiece(move.fromX, move.fromY, move.x, move.y);
-
-        // EVALUATE using minimax (looks ahead multiple turns)
-        int moveScore = minimax(board, depth, false, human, -999999, 999999);
-
-        // UNDO the move
-        board[move.fromY][move.fromX] = savedFromCell;
-        board[move.y][move.x] = savedToCell;
-
-        // Track the best scoring move
-        if (moveScore > bestMove.score)
+        // MOVE ORDERING: Sort moves based on scores from previous iteration
+        // This dramatically improves alpha-beta pruning efficiency
+        if (currentDepth > 1)
         {
-            bestMove = move;
-            bestMove.score = moveScore;
+            std::sort(aiMoves.begin(), aiMoves.end(),
+                [](const Move& a, const Move& b) {
+                    return a.score > b.score; // Best moves first
+                });
         }
+        else
+        {
+            // First iteration: use simple heuristic (prefer center)
+            std::sort(aiMoves.begin(), aiMoves.end(),
+                [](const Move& a, const Move& b) {
+                    int scoreA = (2 - abs(a.x - 2)) + (2 - abs(a.y - 2));
+                    int scoreB = (2 - abs(b.x - 2)) + (2 - abs(b.y - 2));
+                    return scoreA > scoreB;
+                });
+        }
+
+        for (auto& move : aiMoves)
+        {
+            // SAVE state
+            Cell savedFromCell = board[move.fromY][move.fromX];
+            Cell savedToCell = board[move.y][move.x];
+
+            // TRY this move
+            board.movePiece(move.fromX, move.fromY, move.x, move.y);
+
+            // EVALUATE using minimax at current depth
+            int moveScore = minimax(board, currentDepth, false, human, -999999, 999999);
+
+            // UNDO the move
+            board[move.fromY][move.fromX] = savedFromCell;
+            board[move.y][move.x] = savedToCell;
+
+            // Store score for next iteration's move ordering
+            move.score = moveScore;
+
+            // Track the best scoring move across all depths
+            if (moveScore > bestMove.score)
+            {
+                bestMove = move;
+                bestMove.score = moveScore;
+            }
+        }
+
+        std::cout << "    Depth " << currentDepth << " complete. Best so far: ("
+            << bestMove.fromX << "," << bestMove.fromY << ") to ("
+            << bestMove.x << "," << bestMove.y << ") - Score: "
+            << bestMove.score << "\n";
     }
 
-    std::cout << "Best move selected: (" << bestMove.fromX << "," << bestMove.fromY
-        << ") to (" << bestMove.x << "," << bestMove.y
-        << ") - Score: " << bestMove.score << "\n";
+    std::cout << "Best move selected after depth " << maxDepth << ": ("
+        << bestMove.fromX << "," << bestMove.fromY << ") to ("
+        << bestMove.x << "," << bestMove.y << ") - Score: "
+        << bestMove.score << "\n";
     std::cout << "=== END AI TURN ===\n\n";
 
     return bestMove;
 }
-
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
